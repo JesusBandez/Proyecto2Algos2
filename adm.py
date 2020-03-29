@@ -84,7 +84,10 @@ def cargarCanciones(lista:object) -> object: # Hay que comprobar que el archivo 
 		lista.agregarLista(nombre)
 		pass
 
-	return lista
+	cancionCargada = lista.minInterprete(lista.root).cancion
+	reproductor = prepararReproductor(cancionCargada)
+
+	return lista, cancionCargada, reproductor
 
 def pedirArchivo() -> str:	 
 
@@ -158,8 +161,8 @@ def mostrarLista(lista:object) -> object:
 		botonEliminar()
 
 		ventana.blit(panelDeCanciones, (25, 25))
-		nodosDeCanciones = deArbolASecuencia(lista.root)
-		canciones = conseguirCancionesDeNodos(nodosDeCanciones)
+		
+		canciones = lista.obtenerLR()
 		
 		pYReferenciaACanciones = mostrarCancionesEnSecuenciaParcial(canciones[ini:fin])
 
@@ -261,12 +264,32 @@ def mensajeDeEliminado() -> "void":
 	pygame.display.flip()
 	pygame.time.delay(400)
 
-def conseguirCancionesDeNodos(NodosDeCanciones:list) -> list:
-	canciones = []
-	for nodoCancion in NodosDeCanciones:
-		canciones.append(nodoCancion.cancion)
-	return canciones
+def reproducirCancion(reproductor:object) -> object:
 
+	reproductor.reproducir()
+	
+
+def siguienteCancion(lista:object, cancionCargada:object, reproductor:object) -> object:
+	nodoCancion = lista.buscarCancion(lista.root, cancionCargada.interprete, cancionCargada.titulo)
+	cancionCargada = lista.sucesor(nodoCancion).cancion
+	reproductor.parar()
+	reproductor.cargarCancion(cancionCargada)
+	reproductor.reproducir()
+	return cancionCargada
+
+def prepararReproductor(cancionCargada:object) -> "void":
+	
+	reproductor = Reproductor(cancionCargada)	
+
+	return reproductor
+
+def pausarCancion(reproductor:object) -> "void":
+
+	reproductor.pausa()
+
+def pararCancion(reproductor:object) -> "void":
+
+	reproductor.parar()
 
 
 # Fuentes
@@ -313,6 +336,10 @@ pygame.display.flip()
 
 # Se inicia con una lista de reproducción vacía
 lista = ArbolDeCanciones()
+cancionCargada = None
+reproductor = None
+cancionParada = True
+
 
 while True:
 
@@ -324,12 +351,32 @@ while True:
 
 			elif event.type == pygame.MOUSEBUTTONUP:
 
-				if pBotonCargarCancion.collidepoint(pygame.mouse.get_pos()):
-					lista = cargarCanciones(lista)
+				if pBotonReproducir.collidepoint(pygame.mouse.get_pos()):
+					reproducirCancion(reproductor)
+					cancionParada = False
+
+				elif pBotonSiguienteCancion.collidepoint(pygame.mouse.get_pos()):
+					cancionCargada = siguienteCancion(lista, cancionCargada, reproductor)
+
+				elif pBotonCargarCancion.collidepoint(pygame.mouse.get_pos()):
+					lista, cancionCargada, reproductor = cargarCanciones(lista)
 
 				elif pBotonMostrar.collidepoint(pygame.mouse.get_pos()):
 					mostrarLista(lista)
 
+				elif pBotonPausa.collidepoint(pygame.mouse.get_pos()) and not cancionParada:
+					pausarCancion(reproductor)
+					cancionParada = True
+
+				elif pBotonParar.collidepoint(pygame.mouse.get_pos()):
+					pararCancion(reproductor)
+					cancionParada = True
+
 				elif pBotonSalir.collidepoint(pygame.mouse.get_pos()):
 					exit()
-					
+	
+			if reproductor != None and not reproductor.estaTocandoCancion() and not cancionParada:
+				
+				cancionCargada = siguienteCancion(lista, cancionCargada, reproductor)
+
+			
