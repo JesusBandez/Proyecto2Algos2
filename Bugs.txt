@@ -1,0 +1,3 @@
+
+Hay un problema en las aserciones y el rango de lista cuando se tratan de agregar canciones
+desde más de un archivo. El error dice estar en lr.py
