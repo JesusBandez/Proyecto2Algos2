@@ -1,0 +1,7 @@
+El programa se aborta al querer agregar un archivo que existe.
+El programa se aborta si se elimina la canción que está sonando, al tratar
+de avanzar a la siguiente canción.
+Seria buena idea simplificar el codigo
+Faltan precondiciones y postcondiciones
+Faltan los comentarios
+Hay que cambiar todas las imagenes en images

@@ -3,36 +3,15 @@ from reproductor import *
 from lr import *
 import pygame
 from pygame.locals import *
+import math
+import time
 
 pygame.init()
 
-def cancelar() -> object:
-	cancelar = fuente.render("Cancelar", 1, (255, 255, 255))
-	cCancelar = ventana.blit(cancelar, (600, 300))
-	
-	return cCancelar
 
-def dibujarReproductor() -> "void":
-	# Dibujar fondo
-	ventana.blit(fondo, (0,0))
 
-	# Dibujar botones
-	ventana.blit(botonPausa, (40, 25))
-	ventana.blit(botonParar, (160, 25))
-	ventana.blit(botonReproducir, (280, 25))
-	ventana.blit(botonSiguienteCancion, (400, 25))
-	ventana.blit(botonCargarCancion, (670, 25))
-	ventana.blit(botonMostrar, (580, 35))
-	ventana.blit(botonSalir, (715, 145))
-	ventana.blit(cancionActual, (25, 225))
 
-	# Suena actualmente
-	texto = "Suena:"
-	mensaje = fuente.render(texto, 1, (255, 255,255))
-	ventana.blit(mensaje, (50, 170))
-
-	pygame.display.flip()
-
+# Mannipulación del reproductor
 def cargarOtroArchivo() -> str:
 	
 	mensajeCargarOtroArchivo()
@@ -51,21 +30,7 @@ def cargarOtroArchivo() -> str:
 					coordenadas = (0,0)
 	return jugar_otra
 
-def mensajeCargarOtroArchivo() -> "void":
-
-	ventana.blit(fondo, (0,0))
-	texto = "¿Quiere cargar otro archivo?"
-	mensaje = fuente.render(texto, 1, (255,255,255))
-	ventana.blit(mensaje, (150,50))
-	texto = "Sí"
-	mensaje = fuente.render(texto, 1, (255,255,255))
-	ventana.blit(mensaje, (250,150))
-	texto = "No"
-	mensaje = fuente.render(texto, 1, (255,255,255))
-	ventana.blit(mensaje, (450,150))
-	pygame.display.flip()
-
-def cargarCanciones(lista:object) -> object: # Hay que comprobar que el archivo sirve
+def cargarCanciones(lista:object, cancionCargada:object, reproductor:object) -> object: # Hay que comprobar que el archivo sirve
 	ventana.blit(fondo, (0,0))	
 
 	archivos = []
@@ -82,10 +47,10 @@ def cargarCanciones(lista:object) -> object: # Hay que comprobar que el archivo 
 
 	for nombre in archivos:
 		lista.agregarLista(nombre)
-		pass
-
-	cancionCargada = lista.minInterprete(lista.root).cancion
-	reproductor = prepararReproductor(cancionCargada)
+		
+	if len(archivos) > 0:
+		cancionCargada = lista.minInterprete(lista.root).cancion
+		reproductor = prepararReproductor(cancionCargada)		
 
 	return lista, cancionCargada, reproductor
 
@@ -130,25 +95,6 @@ def pedirArchivo() -> str:
 
 	return caracteres
 
-def escribir(caracteres:[str]) -> "void":
-
-	ventana.blit(fondo, (0,0))
-	cancelar()
-	texto = "Ingrese nombre del archivo: "
-	mensaje = fuente.render(texto, 1, (255,255,255))
-	ventana.blit(mensaje, (150, 25))
-	pygame.display.flip()
-	mensaje = str(caracteres)
-	mensaje = fuente.render(mensaje, 1, (255,255,255))
-	ventana.blit(mensaje, (40,100))
-	if len(caracteres) > 0:
-		texto = "Pulse enter para continuar"
-		mensaje = fuente.render(texto, 1, (255,255,255))
-		ventana.blit(mensaje, (200, 560))
-
-
-	pygame.display.flip()
-
 def mostrarLista(lista:object) -> object:	
 	pFlechaDerecha, pFlechaizquierda = botonesDeNavegacion()
 	pVolver = botonVolver()
@@ -190,11 +136,37 @@ def mostrarLista(lista:object) -> object:
 
 		pygame.display.flip()
 
-def botonesDeNavegacion() -> object:
-	p = ventana.blit(flechaDerecha, (590, 300))
-	q = ventana.blit(flechaIzquierda, (490, 300))
-	return p, q
+def reproducirCancion(reproductor:object) -> object:
 
+	reproductor.reproducir()
+
+def siguienteCancion(lista:object, cancionCargada:object, reproductor:object) -> object:
+	if cancionCargada is not None:
+		nodoCancion = lista.buscarCancion(lista.root, cancionCargada.interprete, cancionCargada.titulo)
+		cancionACargar = lista.sucesor(nodoCancion)
+		if cancionACargar is not None:
+			cancionACargar = cancionACargar.cancion
+			reproductor.parar()
+			reproductor.cargarCancion(cancionACargar)
+			reproductor.reproducir()
+			return cancionACargar
+	return cancionCargada
+
+def prepararReproductor(cancionCargada:object) -> "void":
+	
+	reproductor = Reproductor(cancionCargada)	
+
+	return reproductor
+
+def pausarCancion(reproductor:object) -> "void":
+
+	reproductor.pausa()
+
+def pararCancion(reproductor:object) -> "void":
+
+	reproductor.parar()
+
+# Dibujo en la interfaz
 def mostrarCancionesEnSecuenciaParcial(canciones:list) -> "void":
 	posY = 25
 	pYReferenciaACanciones = []
@@ -202,6 +174,7 @@ def mostrarCancionesEnSecuenciaParcial(canciones:list) -> "void":
 		pYReferencia = []
 		interprete, titulo = cancion.interprete, cancion.titulo
 		texto = interprete + " - " + titulo
+		texto = escrituraParcial(texto, 55, 4)
 		mensaje = fuentePequena.render(texto, 1, (255, 255,255))
 		pYReferencia.append(ventana.blit(mensaje, (25, posY)))
 		pYReferencia.append(cancion)
@@ -211,6 +184,87 @@ def mostrarCancionesEnSecuenciaParcial(canciones:list) -> "void":
 
 	return pYReferenciaACanciones
 
+def dibujarReproductor(cancionCargada:object) -> "void":
+	# Dibujar fondo
+	ventana.blit(fondo, (0,0))
+
+	# Dibujar botones
+	ventana.blit(botonPausa, (40, 25))
+	ventana.blit(botonParar, (160, 25))
+	ventana.blit(botonReproducir, (280, 25))
+	ventana.blit(botonSiguienteCancion, (400, 25))
+	ventana.blit(botonCargarCancion, (670, 25))
+	ventana.blit(botonMostrar, (580, 35))
+	ventana.blit(botonSalir, (715, 145))
+	ventana.blit(cancionActual, (25, 225))
+
+	suenaActualmente(cancionCargada)
+
+def suenaActualmente(cancionCargada:object):
+	texto = "Suena:"
+	mensaje = fuente.render(texto, 1, (255, 255,255))
+	ventana.blit(mensaje, (50, 170))
+
+	if cancionCargada is not None:
+		interprete = convertirAMinuscula(cancionCargada.interprete)
+		texto = "Artista: " + escrituraParcial(interprete, 30, 4)
+		mensaje = fuente.render(texto, 1, (255,255,255))
+		ventana.blit(mensaje, (30, 225))
+
+		titulo = convertirAMinuscula(cancionCargada.titulo)
+		texto = "Titulo: " + escrituraParcial(titulo, 30, 4)
+		mensaje = fuente.render(texto, 1, (255,255,255))
+		ventana.blit(mensaje, (30, 275))
+
+	pygame.display.flip()
+
+# Manipulación y modificación de strings
+def escribir(caracteres:[str]) -> "void":
+
+	ventana.blit(fondo, (0,0))
+	cancelar()
+	texto = "Ingrese nombre del archivo: "
+	mensaje = fuente.render(texto, 1, (255,255,255))
+	ventana.blit(mensaje, (150, 25))
+	pygame.display.flip()
+	mensaje = str(caracteres)
+	mensaje = fuente.render(mensaje, 1, (255,255,255))
+	ventana.blit(mensaje, (40,100))
+	if len(caracteres) > 0:
+		texto = "Pulse enter para continuar"
+		mensaje = fuente.render(texto, 1, (255,255,255))
+		ventana.blit(mensaje, (200, 560))
+
+
+	pygame.display.flip()
+
+def escrituraParcial(frase: object, maxCaracteres:int, tiempoDetenido:int):
+	pedazos = []
+	bloques = math.ceil(len(frase) / maxCaracteres)
+	for i in range(bloques):
+		ini, fin = i*maxCaracteres, (i+1)*maxCaracteres
+		pedazos.append(frase[ini:fin])
+
+	
+	rango = tiempoDetenido
+	rango2 = rango / bloques
+
+	tiempo = time.time()
+	tiempo = tiempo % rango
+	
+	for i in range(bloques):
+		
+		if i*rango2 <= tiempo <= (i+1)*rango2:
+			
+			return pedazos[i]
+
+def convertirAMinuscula(frase:list) -> list:
+	temp = frase[0:1]
+	temp2 = frase[1:len(frase)].lower()
+	frase = temp + temp2
+	return frase
+
+# Botones
 def botonVolver() -> object:
 	volver = fuentePequena.render("Volver", 1, (255, 255, 255))
 	volver = ventana.blit(volver, (710, 300))
@@ -222,6 +276,12 @@ def botonEliminar() -> object:
 	eliminar = ventana.blit(eliminar, (25, 300))
 	
 	return eliminar
+
+def cancelar() -> object:
+	cancelar = fuente.render("Cancelar", 1, (255, 255, 255))
+	cCancelar = ventana.blit(cancelar, (600, 300))
+	
+	return cCancelar
 
 def eliminarCancion(lista, pYReferenciaACanciones:list) -> "void":
 
@@ -249,6 +309,26 @@ def eliminarCancion(lista, pYReferenciaACanciones:list) -> "void":
 							return					
 					return
 
+def botonesDeNavegacion() -> object:
+	p = ventana.blit(flechaDerecha, (590, 300))
+	q = ventana.blit(flechaIzquierda, (490, 300))
+	return p, q
+
+# Mensajes
+def mensajeCargarOtroArchivo() -> "void":
+
+	ventana.blit(fondo, (0,0))
+	texto = "¿Quiere cargar otro archivo?"
+	mensaje = fuente.render(texto, 1, (255,255,255))
+	ventana.blit(mensaje, (150,50))
+	texto = "Sí"
+	mensaje = fuente.render(texto, 1, (255,255,255))
+	ventana.blit(mensaje, (250,150))
+	texto = "No"
+	mensaje = fuente.render(texto, 1, (255,255,255))
+	ventana.blit(mensaje, (450,150))
+	pygame.display.flip()
+
 def mensajeDeEliminar() -> "void":
 	mensaje = fuentePequena.render("Seleccione la canción", 1, (255,255,255))
 	ventana.blit(mensaje, (160, 290))
@@ -264,32 +344,13 @@ def mensajeDeEliminado() -> "void":
 	pygame.display.flip()
 	pygame.time.delay(400)
 
-def reproducirCancion(reproductor:object) -> object:
+def mensajeDeDebeCargarCancion() -> "void":
+	texto = "Debe cargar una lista de reproducción"
+	mensaje = fuentePequena.render(texto, 1, (255,255,255))
+	ventana.blit(mensaje, (210, 130))
+	pygame.display.flip()
+	pygame.time.delay(600)
 
-	reproductor.reproducir()
-	
-
-def siguienteCancion(lista:object, cancionCargada:object, reproductor:object) -> object:
-	nodoCancion = lista.buscarCancion(lista.root, cancionCargada.interprete, cancionCargada.titulo)
-	cancionCargada = lista.sucesor(nodoCancion).cancion
-	reproductor.parar()
-	reproductor.cargarCancion(cancionCargada)
-	reproductor.reproducir()
-	return cancionCargada
-
-def prepararReproductor(cancionCargada:object) -> "void":
-	
-	reproductor = Reproductor(cancionCargada)	
-
-	return reproductor
-
-def pausarCancion(reproductor:object) -> "void":
-
-	reproductor.pausa()
-
-def pararCancion(reproductor:object) -> "void":
-
-	reproductor.parar()
 
 
 # Fuentes
@@ -343,7 +404,7 @@ cancionParada = True
 
 while True:
 
-	dibujarReproductor()
+	dibujarReproductor(cancionCargada)
 
 	for event in pygame.event.get():
 			if event.type == QUIT:
@@ -352,14 +413,17 @@ while True:
 			elif event.type == pygame.MOUSEBUTTONUP:
 
 				if pBotonReproducir.collidepoint(pygame.mouse.get_pos()):
-					reproducirCancion(reproductor)
-					cancionParada = False
+					if cancionCargada is None:
+						mensajeDeDebeCargarCancion()
+					else:
+						reproducirCancion(reproductor)
+						cancionParada = False
 
 				elif pBotonSiguienteCancion.collidepoint(pygame.mouse.get_pos()):
 					cancionCargada = siguienteCancion(lista, cancionCargada, reproductor)
 
 				elif pBotonCargarCancion.collidepoint(pygame.mouse.get_pos()):
-					lista, cancionCargada, reproductor = cargarCanciones(lista)
+					lista, cancionCargada, reproductor = cargarCanciones(lista, cancionCargada, reproductor)
 
 				elif pBotonMostrar.collidepoint(pygame.mouse.get_pos()):
 					mostrarLista(lista)
@@ -368,7 +432,7 @@ while True:
 					pausarCancion(reproductor)
 					cancionParada = True
 
-				elif pBotonParar.collidepoint(pygame.mouse.get_pos()):
+				elif cancionCargada is not None and pBotonParar.collidepoint(pygame.mouse.get_pos()):
 					pararCancion(reproductor)
 					cancionParada = True
 
