@@ -183,7 +183,7 @@ def mostrarLista(lista:object) -> object:
 
 					elif pEliminar.collidepoint(pygame.mouse.get_pos()):
 						eliminarCancion(lista, pYReferenciaACanciones)
-
+						
 					elif pVolver.collidepoint(pygame.mouse.get_pos()):
 						return
 
@@ -243,6 +243,8 @@ def eliminarCancion(lista, pYReferenciaACanciones:list) -> "void":
 							#interprete = pYReferencia[1].interprete
 							#titulo = pYReferencia[1].titulo
 							#lista.eliminarCancion(interprete, titulo)
+							mensajeDeEliminado()
+
 							return
 
 					
@@ -250,17 +252,18 @@ def eliminarCancion(lista, pYReferenciaACanciones:list) -> "void":
 
 def mensajeDeEliminar() -> "void":
 	mensaje = fuentePequena.render("Seleccione la canción", 1, (255,255,255))
-	ventana.blit(mensaje, (110, 290))
+	ventana.blit(mensaje, (160, 290))
 	mensaje = fuentePequena.render("a eliminar", 1, (255,255,255))
-	ventana.blit(mensaje, (110, 290))
+	ventana.blit(mensaje, (160, 320))
 	pygame.display.flip()
 
-							
-
-	
-
-
-
+def mensajeDeEliminado() -> "void":
+	borra = pygame.transform.scale(fondo, (300, 200))
+	mensaje = fuentePequena.render("Cancion eliminada", 1, (255,255,255))
+	ventana.blit(borra, (160, 290))
+	ventana.blit(mensaje, (160, 305))
+	pygame.display.flip()
+	pygame.time.delay(400)
 
 # Fuentes
 fuente = pygame.font.Font("fonts/BOOKOS.ttf", 40)
