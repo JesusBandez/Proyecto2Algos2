@@ -1,5 +1,6 @@
-import cancion
-import reproductor
+from cancion import *
+from reproductor import *
+from lr import *
 import pygame
 from pygame.locals import *
 
@@ -65,11 +66,7 @@ def mensajeCargarOtroArchivo() -> "void":
 	pygame.display.flip()
 
 def cargarCanciones(lista:object) -> object: # Hay que comprobar que el archivo sirve
-	ventana.blit(fondo, (0,0))
-
-	if lista == None:
-		#lista = LR()
-		pass
+	ventana.blit(fondo, (0,0))	
 
 	archivos = []
 	otro = "si"
@@ -84,7 +81,7 @@ def cargarCanciones(lista:object) -> object: # Hay que comprobar que el archivo 
 		otro = cargarOtroArchivo()
 
 	for nombre in archivos:
-		# lista.agregarLista(nombre)
+		lista.agregarLista(nombre)
 		pass
 
 	return lista
@@ -161,7 +158,8 @@ def mostrarLista(lista:object) -> object:
 		botonEliminar()
 
 		ventana.blit(panelDeCanciones, (25, 25))
-		canciones = ["1" for i in range(20)]  #lista.deArbolASecuencia()
+		nodosDeCanciones = deArbolASecuencia(lista.root)
+		canciones = conseguirCancionesDeNodos(nodosDeCanciones)
 		
 		pYReferenciaACanciones = mostrarCancionesEnSecuenciaParcial(canciones[ini:fin])
 
@@ -199,7 +197,7 @@ def mostrarCancionesEnSecuenciaParcial(canciones:list) -> "void":
 	pYReferenciaACanciones = []
 	for cancion in canciones:
 		pYReferencia = []
-		interprete, titulo = "Wintersun" + str(posY), "The forest that weep" #cancion.interprete, cancion.titulo
+		interprete, titulo = cancion.interprete, cancion.titulo
 		texto = interprete + " - " + titulo
 		mensaje = fuentePequena.render(texto, 1, (255, 255,255))
 		pYReferencia.append(ventana.blit(mensaje, (25, posY)))
@@ -240,14 +238,12 @@ def eliminarCancion(lista, pYReferenciaACanciones:list) -> "void":
 
 						if pYReferencia[0].collidepoint(posicionMouse):
 						
-							#interprete = pYReferencia[1].interprete
-							#titulo = pYReferencia[1].titulo
-							#lista.eliminarCancion(interprete, titulo)
+							interprete = pYReferencia[1].interprete
+							titulo = pYReferencia[1].titulo
+							lista.eliminarCancion(interprete, titulo)
 							mensajeDeEliminado()
 
-							return
-
-					
+							return					
 					return
 
 def mensajeDeEliminar() -> "void":
@@ -264,6 +260,14 @@ def mensajeDeEliminado() -> "void":
 	ventana.blit(mensaje, (160, 305))
 	pygame.display.flip()
 	pygame.time.delay(400)
+
+def conseguirCancionesDeNodos(NodosDeCanciones:list) -> list:
+	canciones = []
+	for nodoCancion in NodosDeCanciones:
+		canciones.append(nodoCancion.cancion)
+	return canciones
+
+
 
 # Fuentes
 fuente = pygame.font.Font("fonts/BOOKOS.ttf", 40)
@@ -308,7 +312,7 @@ ventana.blit(mensaje, (50, 170))
 pygame.display.flip()
 
 # Se inicia con una lista de reproducción vacía
-lista = None
+lista = ArbolDeCanciones()
 
 while True:
 

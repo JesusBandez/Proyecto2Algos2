@@ -9,7 +9,7 @@ class Cancion(object):
 	"""
 
 	#Constructor
-	def __init__(self, titulo : str, interprete : str, ubicacion : str):
+	def __init__(self, interprete : str, titulo : str, ubicacion : str):
 		try:
 			#Invariante de la representacion
 			assert(
@@ -59,8 +59,9 @@ class Cancion(object):
 		return False
 
 	def aString(self) -> str:
-		return "Titulo: " + self.titulo + ", Interprete: " + self.interprete
+		return "Interprete: "+ self.interprete + "; Titulo: " + self.titulo
 
+#Funcion informativa de la clase cancion
 def about():
 	print("\n\tSINTAXIS")
 	print(">>  cancion = cancion.cancion(titulo : str, interprete : str, ubicacion : str)")
