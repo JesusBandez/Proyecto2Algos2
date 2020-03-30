@@ -11,110 +11,222 @@ import time
 
 # Manipulación del reproductor
 def cargarOtroArchivo() -> str:
-	
+	""" Funcion para preguntar al usuario si quiere ingresar el nombre
+	de otro archivo
+	"""
+
+	# Se muestra el mensaje al usuario y se dibujan las opciones: "Si" y "No"
 	mensajeCargarOtroArchivo()
+
+	# Se asignan unas coordenadas
 	coordenadas = (0,0)
+
 	while coordenadas == (0,0):
+		# Bucle para mantener la pantalla y obtener la decision del usuario
+
+		# Se itera entre los eventos de pygame
 		for event in pygame.event.get():
+
+			# Si da a salir, se cierra el programa
 			if event.type == QUIT:
 				exit()
-			elif event.type == pygame.MOUSEBUTTONUP:				
+
+			# Se obtiene la elección del usuario determinando si selecció
+			# el botón de "Sí" o "No"
+			elif event.type == pygame.MOUSEBUTTONUP:			
 				coordenadas = pygame.mouse.get_pos()
 				if 200 <= coordenadas[0] <= 285 and 150 <= coordenadas[1] <= 190:
 					otro = "si"
 				elif 450 <= coordenadas[0] <= 500 and 150 <= coordenadas[1] <= 190:
 					otro = "no"
+				# Si el usuario no selecciona ninguno de los dos, se espera
+				# a que elija alguno
 				else:
 					coordenadas = (0,0)
+
+	# Se retorna la elección del usuario
 	return otro
 
-def cargarCanciones(lista:object, reproductor:object) -> object: # Hay que comprobar que el archivo sirve
+def cargarCanciones(lista:object, reproductor:object) -> object:
+	""" Funcion que permite la carga de canciones en el reproductor 
+	desde los archivos
+
+	lista: Arbol Binario de canciones
+	reproductor: Objeto para reproducir las canciones
+	"""
+
+	# Dibujar el fondo de la interfaz
 	ventana.blit(fondo, (0,0))	
 
+	# arreglo para guardar los archivos leídos
 	archivos = []
+
 	otro = "si"
 	while otro == "si":
+		# Bucle para pedir al usuario los nombres de los archivos y 
+		# agregar sus canciones a la lista
 		nombreArchivo = pedirArchivo()
 
-		if nombreArchivo is None:			
+		if nombreArchivo is None:
+			# Romper el bucle cuando el usuario no quiera agregar más
+			# archivos	
 			break
 
 		try:
+			# Se intenta abrir el archivo, si falla, se notifica
 			open(nombreArchivo, "r")
+
+			# Guardar el archivo leido
 			archivos.append(nombreArchivo)
+
+			# Preguntar al usuario si agregará otro archivo
 			otro = cargarOtroArchivo()		
 		except:
+			# Mensaje de error si no se encuentra un archivo o no se 
+			# puede abrir
 			mensajeDeErrorAlAbrirArchivo()
 			
 
+	# Iterar entre los nombres de los archivos ingresados por el usuario
 	for nombre in archivos:
+
+		# Se intenta agregar las canciones del archivo a la lista
 		try:
 			lista.agregarLista(nombre)
 		except:
+			# Si no se puede, se le avisa al usuario por interfaz y 
+			# por terminal
 			mensajeDeAlgunasCancionesNoSeCargaron()
-		
+	
+	# Si el usuario ingresó nombres de archivos, no se ha creado un
+	# reproductor y hay al menos una canción en la lista.
 	if (len(archivos) > 0 and reproductor is None
 		and lista.root is not None):
+
+		# Se consigue la cancion a cargar, la cual será la que tenga
+		# el minimo interprete en orden lexicográfico, se crea un 
+		# reproductor y se carga la canción en él
 		cancionACargar = lista.minInterprete(lista.root).cancion
 		reproductor = prepararReproductor(cancionACargar)		
 
+	# Se retorna la lista de reproducción y el reproductor
 	return lista, reproductor
 
-def pedirArchivo() -> str:	 
+def pedirArchivo() -> str:
+	""" Función para mostrar y pedir el nombre del archivo de donde se 
+	cargará las canciones a la lista al usuario por medio de la interfaz
+	"""
 
+	# Se crean variables de tipo string para guardar las entradas del 
+	# usuario
 	caracteres = ""
 	asignado = ""
+
+	# Se escriben en pantalla los caracteres actuales
 	escribir(caracteres)
+
+	# Se muestra en la interfaz un botón de para cancelar, y se guarda
+	# su posición
 	cCancelar = cancelar()
+
 	while asignado == "":
+		# Bucle para que el usuario inserte los caracteres que conforman
+		# el nombre del archivo
 
 
-
+		# Se obtiene los eventos de pygame y se iteran por ellos
 		for event in pygame.event.get():
 			
+			# Si se pulsa el botón de cancelar, se sale de la interfaz
+			# y se vuelve a los controles del reproductor
 			if event.type == pygame.MOUSEBUTTONUP:
 				if cCancelar.collidepoint(pygame.mouse.get_pos()):
 					return None
 
+			# Si se pulsa una tecla
 			if event.type == KEYDOWN:
 
+				# Si es backspace, se borra el último caracter ingresado
+				# por el usuario
 				if event.key == K_BACKSPACE:
 					caracteres = caracteres[0:len(caracteres)-1]
 
+				# Si es enter y la cantidad de caracteres que ingresó el				
+				# el usuario es mayor que 0, se guardan los caracteres y
+				# se sale del bucle
+
 				elif event.key == K_RETURN:
-					if len(caracteres) > 0:						
+					if len(caracteres) > 0:
+
 						asignado = caracteres	
 
+				# Se limita la cantidad de caracteres que puede ingresar
+				# el usuario a 120.
 				elif len(caracteres) > 120:
 					pass
 
+				# En cualquier otro caso, se consigue la letra o simbolo
+				# que pulsó el usuario y se guarda
 				else:						
 					caracteres = caracteres + event.unicode	
 
+				# Se escribe en la interfaz el nombre que ha ido escribiendo
+				# el usuario
 				escribir(caracteres)
 
+			# Si se pulsa el boton salir, se sale
 			elif event.type == QUIT:
 				exit()
 
 			
-
+	# Se retornan la string formada por los caracteres que ingresó el
+	# usuario
 	return caracteres
 
-def mostrarLista(lista:object) -> object:	
+def mostrarLista(lista:object) -> "void":
+	""" Procedimiento que muestra por la interfaz las canciones que
+	se han cargado en la lista. Así mismo, en esta pantalla es posible
+	elegir si se quiere eliminar una canción de la interfaz.
+
+	lista: Arbol Binario con las canciones
+	"""
+
+	# Se dibujan y guardan las posiciones de dos botones que permitiran
+	# al usuario navegar por la lista de canciones si esta es mayor
+	# a 8 canciones
 	pFlechaDerecha, pFlechaizquierda = botonesDeNavegacion()
+
+	# Se dibuja y guarda la posicion de un botón para permitir al usuario
+	# volver a la pantalla del reproductor
 	pVolver = botonVolver()
+
+	# Se dibuja y guarda la posicion de un boton que permite eliminar
+	# canciones de la lista de reproducción
 	pEliminar = botonEliminar()
+
+	# Se declaran las variables que permitirá partir la lista en pedazos
+	# para mostrarla al usuario
 	ini, fin = 0, 8	
+
 	while True:
+		# Se dibuja el fondo de la pantalla y los botones
 		ventana.blit(fondo, (0,0))
 		botonesDeNavegacion()
 		botonVolver()
 		botonEliminar()
 
+		# Se dibuja el panel donde se escribirán los interpretes y los 
+		# titulos de las canciones
 		ventana.blit(panelDeCanciones, (25, 25))
 		
+		# Se obtiene la lista de reproducción en el orden en el que 
+		# se van a reproducir
 		canciones = lista.obtenerLR()
 		
+		# Se obtiene de la funcion un arreglo de arreglos de tamaño: 2
+		# Estos arreglos guardan en su primera casilla la posición de
+		# la canción en la pantalla y en su segunda casilla una referencia
+		# a al nodo de la canció en el arbol
 		pYReferenciaACanciones = mostrarCancionesEnSecuenciaParcial(canciones[ini:fin])
 
 		for event in pygame.event.get():
@@ -191,21 +303,53 @@ def cancionAnterior(lista:object, reproductor:object) -> object:
 	
 
 # Dibujo en la interfaz
-def mostrarCancionesEnSecuenciaParcial(canciones:list) -> "void":
+def mostrarCancionesEnSecuenciaParcial(canciones:list) -> list:
+	"""  Funcion que dibuja de forma parcial las canciones en la lista
+	de canciones. La función obtiene solo un pedazo de la lista completa
+	en caso de ser muy grande y va dibujando en la interfaz este pedazo
+	de la lista. Tambien, un arreglo que contiene arreglos de tamaño dos
+	Los cuales tiene en su primera casilla la posición en la pantalla de 
+	la canción y una referencia a la canción
+	"""
+	# Se establece la distancia a la que se dibujarán las canciones
+	# en la pantalla
 	posY = 25
+
+	# Se genera al arreglo que se retornará para llenarlo
 	pYReferenciaACanciones = []
+
+	# Se itera entre cada canción en la lista canciones
 	for cancion in canciones:
+
+		# Generar un arreglo vacío
 		pYReferencia = []
-		interprete, titulo = cancion.interprete, cancion.titulo
+
+		# obtener el interprete y el titulo de la cancion y se unen,
+		# separados por " - "
+		interprete, titulo = cancion.interprete, cancion.titulo		
 		texto = interprete + " - " + titulo
+
+		# Se dibujan en la interfaz el nombre "-" interprete de la cancion.
+		# Ademas, se obtiene mediante escritura parcial() el texto a escribir en 
+		# la pantalla
 		texto = escrituraParcial(texto, 55, 4)
 		mensaje = fuentePequena.render(texto, 1, (255, 255,255))
+
+		# Se guarda la posición de la canción en la pantalla
 		pYReferencia.append(ventana.blit(mensaje, (25, posY)))
+
+		# Se guarda la referencia en la cancion
 		pYReferencia.append(cancion)
+
+		# Luego, se guarda el arreglo dentro del arreglo que se va a
+		# retorna
 		pYReferenciaACanciones.append(pYReferencia)
+
+		# Calcular la posicion donde se dibujará la siguiente canción
 		posY = posY + 32
 		
-
+	# Retornar el arreglo de arreglos que tienen las posiciones y las 
+	# referencias a las canciones
 	return pYReferenciaACanciones
 
 def dibujarReproductor(reproductor:object) -> "void":
@@ -272,22 +416,43 @@ def escribir(caracteres:[str]) -> "void":
 
 	pygame.display.flip()
 
-def escrituraParcial(frase: object, maxCaracteres:int, tiempoDetenido:int):
+def escrituraParcial(frase: object, maxCaracteres:int, tiempoDetenido:int) -> str:
+	""" Función que toma una string y la parte en pedazos de tamaño determinado y
+	retorna uno de estos pedazos dependiendo del tiempo
+	
+	frase: string que se partirá en pedazos
+
+	maxCaracteres: Determina la máxima cantidad de carácteres
+		que puede tener cada pedazo 
+
+	tiempoDetenido: Cantidad de tiempo que determina la espera para retornar
+		cada pedazo
+	"""
+
+	# Arreglo que guardará los pedazos de la frase
 	pedazos = []
+
+	# Se obtiene la cantidad de pedazos posibles
 	bloques = math.ceil(len(frase) / maxCaracteres)
+
+	# Se corta la string en los posibles bloques
 	for i in range(bloques):
 		ini, fin = i*maxCaracteres, (i+1)*maxCaracteres
 		pedazos.append(frase[ini:fin])
 
-	
+	# Se obtienen los rangos posibles
 	rango = tiempoDetenido
 	rango2 = rango / bloques
 
+	# Tiempo desde que inició el programa
 	tiempo = time.time()
 	tiempo = tiempo % rango
 	
+	# Itera entre los bloques posibles
 	for i in range(bloques):
 		
+		# Si tiempo está en el rango del bloque se retorna el pedazo
+		# que corresponde al bloque
 		if i*rango2 <= tiempo <= (i+1)*rango2:
 			
 			return pedazos[i]
@@ -300,12 +465,18 @@ def convertirAMinuscula(frase:list) -> list:
 
 # Botones
 def botonVolver() -> object:
+	""" Funcion que dibuja un boton que permite volver a la pantalla del
+	reproductor al usuario y retorna la posicion de este en la pantalla
+	"""
 	volver = fuentePequena.render("Volver", 1, (255, 255, 255))
 	volver = ventana.blit(volver, (710, 300))
 	
 	return volver
 
 def botonEliminar() -> object:
+	""" Funcion que dibuja un boton que permite eliminar canciones de
+	la lista de reproducción y retorna la posición de este
+	"""
 	eliminar = fuentePequena.render("Eliminar", 1, (255, 255, 255))
 	eliminar = ventana.blit(eliminar, (25, 300))
 	
@@ -347,6 +518,9 @@ def eliminarCancion(lista, pYReferenciaACanciones:list) -> "void":
 					return
 
 def botonesDeNavegacion() -> object:
+	""" Funcion que dibuja dos botones con forma de flecha y retorna
+	la posicion de ambos
+	"""
 	p = ventana.blit(flechaDerecha, (590, 279))
 	q = ventana.blit(flechaIzquierda, (480, 279))
 	return p, q
