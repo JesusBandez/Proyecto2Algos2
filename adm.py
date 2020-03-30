@@ -83,7 +83,7 @@ def pedirArchivo() -> str:
 					if len(caracteres) > 0:						
 						asignado = caracteres	
 
-				elif len(caracteres) > 40:
+				elif len(caracteres) > 120:
 					pass
 
 				else:						
@@ -239,17 +239,26 @@ def escribir(caracteres:[str]) -> "void":
 
 	ventana.blit(fondo, (0,0))
 	cancelar()
-	texto = "Ingrese nombre del archivo: "
-	mensaje = fuente.render(texto, 1, (255,255,255))
-	ventana.blit(mensaje, (150, 25))
-	pygame.display.flip()
-	mensaje = str(caracteres)
-	mensaje = fuente.render(mensaje, 1, (255,255,255))
-	ventana.blit(mensaje, (40,100))
+	texto = "Ingrese el nombre o la ruta del archivo con la lista de canciones: "
+	mensaje = fuentePequena.render(texto, 1, (255,255,255))
+	ventana.blit(mensaje, (50, 25))
+	
+	mensaje = str(caracteres[0:41])
+	mensaje = fuentePequena.render(mensaje, 1, (255,255,255))
+	ventana.blit(mensaje, (5,100))
+
+	mensaje = str(caracteres[41:82])
+	mensaje = fuentePequena.render(mensaje, 1, (255,255,255))
+	ventana.blit(mensaje, (5,120))
+
+	mensaje = str(caracteres[82:123])
+	mensaje = fuentePequena.render(mensaje, 1, (255,255,255))
+	ventana.blit(mensaje, (5, 140))
+
 	if len(caracteres) > 0:
 		texto = "Pulse enter para continuar"
-		mensaje = fuente.render(texto, 1, (255,255,255))
-		ventana.blit(mensaje, (200, 560))
+		mensaje = fuentePequena.render(texto, 1, (255,255,255))
+		ventana.blit(mensaje, (100, 310))
 
 
 	pygame.display.flip()
@@ -496,7 +505,12 @@ while True:
 					elif pBotonSalir.collidepoint(pygame.mouse.get_pos()):
 						exit()
 
-	cancionCargada = siguienteCancion(lista, cancionCargada, reproductor)
+
+	if siguienteCancion(lista, cancionCargada, reproductor) is cancionCargada:
+		cancionParada = True
+	else:
+		cancionCargada = siguienteCancion(lista, cancionCargada, reproductor)
+
 			
 			
 				
