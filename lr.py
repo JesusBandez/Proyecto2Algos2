@@ -99,22 +99,20 @@ class ArbolDeCanciones(object):
 	"""
 	def buscarCancion(self, subTree, interprete, titulo) -> NodoCancion:
 
-		if subTree is None:
-			return None
+		if (subTree is None or 
+			(interprete == subTree.cancion.interprete and titulo == subTree.cancion.titulo)):
 
-		elif esMenor(interprete, titulo,
+			return subTree
+
+		if esMenor(interprete, titulo,
 					subTree.cancion.interprete,subTree.cancion.titulo):
 
 			return self.buscarCancion(subTree.left, interprete, titulo)
 
-		elif esMenor(subTree.cancion.interprete, subTree.cancion.titulo,
-					interprete, titulo):
+		else:
 
 			return self.buscarCancion(subTree.right, interprete, titulo)
 
-		else :
-
-			return subTree
 
 	"""Se Inserta una Cancion en el ABB como un nodoCancion, 
 		dado el interprete, titulo y ubicacion
@@ -123,25 +121,32 @@ class ArbolDeCanciones(object):
 
 		assert(esArbolDeBusqCancion(self.root) or self.root == None)
 
-		z = NodoCancion(interprete, titulo, ubicacion)
-		y = None
-		
-		x = self.root
+		#Si No esta la cancion se agrega
+		if self.root==None or self.buscarCancion(self.root, interprete, titulo)==None:
 
-		while x!=None:
-			y = x
-			if esMenor(z.cancion.interprete,z.cancion.titulo,x.cancion.interprete,x.cancion.titulo):
-				x = x.left
+			z = NodoCancion(interprete, titulo, ubicacion)
+			y = None
+			
+			x = self.root
+
+			while x!=None:
+				y = x
+				if esMenor(z.cancion.interprete,z.cancion.titulo,x.cancion.interprete,x.cancion.titulo):
+					x = x.left
+				else:
+					x = x.right
+			z.p = y 
+
+			if y == None:
+				self.root = z
+			elif esMenor(z.cancion.interprete,z.cancion.titulo,y.cancion.interprete,y.cancion.titulo):
+				y.left = z
 			else:
-				x = x.right
-		z.p = y 
+				y.right = z
 
-		if y == None:
-			self.root = z
-		elif esMenor(z.cancion.interprete,z.cancion.titulo,y.cancion.interprete,y.cancion.titulo):
-			y.left = z
+		#Si ta existia, se informa pero no se hace nada
 		else:
-			y.right = z
+			pass
 
 
 	"""Retorna una lista de Canciones ordenada lixicograficamente con respecto a

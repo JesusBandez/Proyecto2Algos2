@@ -11,7 +11,7 @@ pygame.init()
 
 
 
-# Mannipulación del reproductor
+# Manipulación del reproductor
 def cargarOtroArchivo() -> str:
 	
 	mensajeCargarOtroArchivo()
@@ -166,6 +166,18 @@ def pararCancion(reproductor:object) -> "void":
 
 	reproductor.parar()
 
+def cancionAnterior(lista:object, cancionCargada:object, reproductor:object) -> object:
+	if cancionCargada is not None:
+		nodoCancion = lista.buscarCancion(lista.root, cancionCargada.interprete, cancionCargada.titulo)
+		cancionACargar = lista.predecesor(nodoCancion)
+		if cancionACargar is not None:
+			cancionACargar = cancionACargar.cancion
+			reproductor.parar()
+			reproductor.cargarCancion(cancionACargar)
+			reproductor.reproducir()
+			return cancionACargar
+	return cancionCargada	
+
 # Dibujo en la interfaz
 def mostrarCancionesEnSecuenciaParcial(canciones:list) -> "void":
 	posY = 25
@@ -189,10 +201,11 @@ def dibujarReproductor(cancionCargada:object) -> "void":
 	ventana.blit(fondo, (0,0))
 
 	# Dibujar botones
-	ventana.blit(botonPausa, (40, 25))
-	ventana.blit(botonParar, (160, 25))
-	ventana.blit(botonReproducir, (280, 25))
-	ventana.blit(botonSiguienteCancion, (400, 25))
+	ventana.blit(botonPausa, (25, 25))
+	ventana.blit(botonParar, (130, 25))
+	ventana.blit(botonReproducir, (235, 25))
+	ventana.blit(botonCancionAnterior, (340, 25))
+	ventana.blit(botonSiguienteCancion, (445, 25))
 	ventana.blit(botonCargarCancion, (670, 25))
 	ventana.blit(botonMostrar, (580, 35))
 	ventana.blit(botonSalir, (715, 145))
@@ -372,6 +385,7 @@ fuentePequena = pygame.font.Font("fonts/BOOKOS.ttf", 25)
 # Imagenes
 botonCargarCancion = pygame.image.load("images/LoadButton.png")
 botonSiguienteCancion = pygame.image.load("images/NextSongButton.png")
+botonCancionAnterior = pygame.image.load("images/PreviousSongButton.png")
 botonPausa = pygame.image.load("images/PauseButton.png")
 botonReproducir = pygame.image.load("images/PlayButton.png")
 botonParar = pygame.image.load("images/StopButton.png")
@@ -391,10 +405,11 @@ pygame.display.set_caption("Reproductor de música")
 ventana.blit(fondo, (0,0))
 
 # Dibujar botones y guardar posición
-pBotonPausa = ventana.blit(botonPausa, (40, 25))
-pBotonParar = ventana.blit(botonParar, (160, 25))
-pBotonReproducir = ventana.blit(botonReproducir, (280, 25))
-pBotonSiguienteCancion = ventana.blit(botonSiguienteCancion, (400, 25))
+pBotonPausa = ventana.blit(botonPausa, (25, 25))
+pBotonParar = ventana.blit(botonParar, (130, 25))
+pBotonReproducir = ventana.blit(botonReproducir, (235, 25))
+pBotonCancionAnterior = ventana.blit(botonCancionAnterior, (340, 25))
+pBotonSiguienteCancion = ventana.blit(botonSiguienteCancion, (445, 25))
 pBotonCargarCancion = ventana.blit(botonCargarCancion, (670, 25))
 pBotonMostrar = ventana.blit(botonMostrar, (580, 35))
 pBotonSalir = ventana.blit(botonSalir, (715, 145))
@@ -426,13 +441,24 @@ while True:
 
 				elif event.type == pygame.MOUSEBUTTONUP:
 
-					if pBotonReproducir.collidepoint(pygame.mouse.get_pos()):
+					if pBotonPausa.collidepoint(pygame.mouse.get_pos()) and not cancionParada:
+						pausarCancion(reproductor)
+						cancionParada = True
+
+					elif cancionCargada is not None and pBotonParar.collidepoint(pygame.mouse.get_pos()):
+						pararCancion(reproductor)
+						cancionParada = True
+
+					elif pBotonReproducir.collidepoint(pygame.mouse.get_pos()):
 						if cancionCargada is None:
 							mensajeDeDebeCargarCancion()
 						else:
 							reproducirCancion(reproductor)
 							cancionParada = False
 							
+					elif pBotonCancionAnterior.collidepoint(pygame.mouse.get_pos()):
+						cancionCargada = cancionAnterior(lista, cancionCargada, reproductor)
+
 
 					elif pBotonSiguienteCancion.collidepoint(pygame.mouse.get_pos()):
 						cancionCargada = siguienteCancion(lista, cancionCargada, reproductor)
@@ -443,13 +469,7 @@ while True:
 					elif pBotonMostrar.collidepoint(pygame.mouse.get_pos()):
 						mostrarLista(lista)
 
-					elif pBotonPausa.collidepoint(pygame.mouse.get_pos()) and not cancionParada:
-						pausarCancion(reproductor)
-						cancionParada = True
 
-					elif cancionCargada is not None and pBotonParar.collidepoint(pygame.mouse.get_pos()):
-						pararCancion(reproductor)
-						cancionParada = True
 
 					elif pBotonSalir.collidepoint(pygame.mouse.get_pos()):
 						exit()
