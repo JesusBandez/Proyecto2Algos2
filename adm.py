@@ -28,7 +28,7 @@ def cargarOtroArchivo() -> str:
 					coordenadas = (0,0)
 	return jugar_otra
 
-def cargarCanciones(lista:object, cancionCargada:object, reproductor:object) -> object: # Hay que comprobar que el archivo sirve
+def cargarCanciones(lista:object, reproductor:object) -> object: # Hay que comprobar que el archivo sirve
 	ventana.blit(fondo, (0,0))	
 
 	archivos = []
@@ -36,9 +36,9 @@ def cargarCanciones(lista:object, cancionCargada:object, reproductor:object) -> 
 	while otro == "si":
 		nombreArchivo = pedirArchivo()
 
-		if nombreArchivo is None:
-			archivos = []
+		if nombreArchivo is None:			
 			break
+
 		try:
 			open(nombreArchivo, "r")
 			archivos.append(nombreArchivo)
@@ -47,16 +47,18 @@ def cargarCanciones(lista:object, cancionCargada:object, reproductor:object) -> 
 			mensajeDeErrorAlAbrirArchivo()
 			
 
-
-
 	for nombre in archivos:
-		lista.agregarLista(nombre)
+		try:
+			lista.agregarLista(nombre)
+		except:
+			mensajeDeAlgunasCancionesNoSeCargaron()
 		
-	if len(archivos) > 0 and reproductor is None:
-		cancionCargada = lista.minInterprete(lista.root).cancion
-		reproductor = prepararReproductor(cancionCargada)		
+	if (len(archivos) > 0 and reproductor is None
+		and lista.root is not None):
+		cancionACargar = lista.minInterprete(lista.root).cancion
+		reproductor = prepararReproductor(cancionACargar)		
 
-	return lista, cancionCargada, reproductor
+	return lista, reproductor
 
 def pedirArchivo() -> str:	 
 
@@ -143,21 +145,21 @@ def reproducirCancion(reproductor:object) -> object:
 
 	reproductor.reproducir()
 
-def siguienteCancion(lista:object, cancionCargada:object, reproductor:object) -> object:
-	if cancionCargada is not None:
-		nodoCancion = lista.buscarCancion(lista.root, cancionCargada.interprete, cancionCargada.titulo)
+def siguienteCancion(lista:object, reproductor:object) -> object:
+	if reproductor is not None:
+		nodoCancion = lista.buscarCancion(lista.root, reproductor.actual.interprete, reproductor.actual.titulo)
 		cancionACargar = lista.sucesor(nodoCancion)
 		if cancionACargar is not None:
 			cancionACargar = cancionACargar.cancion
 			reproductor.parar()
 			reproductor.cargarCancion(cancionACargar)
 			reproductor.reproducir()
-			return cancionACargar
-	return cancionCargada
-
-def prepararReproductor(cancionCargada:object) -> "void":
+			
 	
-	reproductor = Reproductor(cancionCargada)	
+
+def prepararReproductor(cancionACargar:object) -> "void":
+	
+	reproductor = Reproductor(cancionACargar)	
 
 	return reproductor
 
@@ -169,17 +171,17 @@ def pararCancion(reproductor:object) -> "void":
 
 	reproductor.parar()
 
-def cancionAnterior(lista:object, cancionCargada:object, reproductor:object) -> object:
-	if cancionCargada is not None:
-		nodoCancion = lista.buscarCancion(lista.root, cancionCargada.interprete, cancionCargada.titulo)
+def cancionAnterior(lista:object, reproductor:object) -> object:
+	if reproductor is not None:
+		nodoCancion = lista.buscarCancion(lista.root, reproductor.actual.interprete, reproductor.actual.titulo)
 		cancionACargar = lista.predecesor(nodoCancion)
 		if cancionACargar is not None:
 			cancionACargar = cancionACargar.cancion
 			reproductor.parar()
 			reproductor.cargarCancion(cancionACargar)
 			reproductor.reproducir()
-			return cancionACargar
-	return cancionCargada	
+			
+	
 
 # Dibujo en la interfaz
 def mostrarCancionesEnSecuenciaParcial(canciones:list) -> "void":
@@ -199,7 +201,7 @@ def mostrarCancionesEnSecuenciaParcial(canciones:list) -> "void":
 
 	return pYReferenciaACanciones
 
-def dibujarReproductor(cancionCargada:object) -> "void":
+def dibujarReproductor(reproductor:object) -> "void":
 	# Dibujar fondo
 	ventana.blit(fondo, (0,0))
 
@@ -214,20 +216,20 @@ def dibujarReproductor(cancionCargada:object) -> "void":
 	ventana.blit(botonSalir, (715, 145))
 	ventana.blit(cancionActual, (25, 225))
 	mensajesSobreBotones()
-	suenaActualmente(cancionCargada)
+	suenaActualmente(reproductor)
 
-def suenaActualmente(cancionCargada:object):
+def suenaActualmente(reproductor:object):
 	texto = "Suena:"
 	mensaje = fuente.render(texto, 1, (255, 255,255))
 	ventana.blit(mensaje, (50, 170))
 
-	if cancionCargada is not None:
-		interprete = convertirAMinuscula(cancionCargada.interprete)
+	if reproductor is not None:
+		interprete = convertirAMinuscula(reproductor.actual.interprete)
 		texto = "Artista: " + escrituraParcial(interprete, 30, 4)
 		mensaje = fuente.render(texto, 1, (255,255,255))
 		ventana.blit(mensaje, (30, 225))
 
-		titulo = convertirAMinuscula(cancionCargada.titulo)
+		titulo = convertirAMinuscula(reproductor.actual.titulo)
 		texto = "Titulo: " + escrituraParcial(titulo, 30, 4)
 		mensaje = fuente.render(texto, 1, (255,255,255))
 		ventana.blit(mensaje, (30, 275))
@@ -325,7 +327,7 @@ def eliminarCancion(lista, pYReferenciaACanciones:list) -> "void":
 						
 
 						if pYReferencia[0].collidepoint(posicionMouse):
-							if pYReferencia[1] is cancionCargada:
+							if pYReferencia[1] is reproductor.actual:
 								mensajeDeNoSePuedeEliminar()
 								return
 
@@ -404,6 +406,20 @@ def mensajeDeErrorAlAbrirArchivo() -> "void":
 	pygame.display.flip()
 	pygame.time.delay(1000)
 
+def mensajeDeAlgunasCancionesNoSeCargaron() -> "void":
+	ventana.blit(fondo, (0,0))
+	texto = "No se pudieron cargar algunas canciones"
+	mensaje = fuente.render(texto, 1, (255,255,255))
+	ventana.blit(mensaje, (50, 50))
+	texto = "Revise que el archivo con la lista de canciones"
+	mensaje = fuentePequena.render(texto, 1, (255,255,255))
+	ventana.blit(mensaje, (10, 120))
+	texto = "tiene el formato válido"
+	mensaje = fuentePequena.render(texto, 1, (255,255,255))
+	ventana.blit(mensaje, (514, 120))
+	pygame.display.flip()
+	pygame.time.delay(4000)
+
 
 # Fuentes
 fuente = pygame.font.Font("fonts/BOOKOS.ttf", 40)
@@ -453,7 +469,6 @@ pygame.display.flip()
 
 # Se inicia con una lista de reproducción vacía
 lista = ArbolDeCanciones()
-cancionCargada = None
 reproductor = None
 cancionParada = True
 
@@ -464,7 +479,7 @@ while True:
 
 		
 
-		dibujarReproductor(cancionCargada)
+		dibujarReproductor(reproductor)
 
 		for event in pygame.event.get():
 				if event.type == QUIT:
@@ -476,26 +491,26 @@ while True:
 						pausarCancion(reproductor)
 						cancionParada = True
 
-					elif cancionCargada is not None and pBotonParar.collidepoint(pygame.mouse.get_pos()):
+					elif reproductor is not None and pBotonParar.collidepoint(pygame.mouse.get_pos()):
 						pararCancion(reproductor)
 						cancionParada = True
 
 					elif pBotonReproducir.collidepoint(pygame.mouse.get_pos()):
-						if cancionCargada is None:
+						if reproductor is None:
 							mensajeDeDebeCargarCancion()
 						else:
 							reproducirCancion(reproductor)
 							cancionParada = False
 							
 					elif pBotonCancionAnterior.collidepoint(pygame.mouse.get_pos()):
-						cancionCargada = cancionAnterior(lista, cancionCargada, reproductor)
+						cancionAnterior(lista, reproductor)
 
 
 					elif pBotonSiguienteCancion.collidepoint(pygame.mouse.get_pos()):
-						cancionCargada = siguienteCancion(lista, cancionCargada, reproductor)
+						siguienteCancion(lista, reproductor)
 
 					elif pBotonCargarCancion.collidepoint(pygame.mouse.get_pos()):
-						lista, cancionCargada, reproductor = cargarCanciones(lista, cancionCargada, reproductor)
+						lista, reproductor = cargarCanciones(lista, reproductor)
 
 					elif pBotonMostrar.collidepoint(pygame.mouse.get_pos()):
 						mostrarLista(lista)
@@ -506,10 +521,10 @@ while True:
 						exit()
 
 
-	if siguienteCancion(lista, cancionCargada, reproductor) is cancionCargada:
+	if siguienteCancion(lista, reproductor) is reproductor.actual:
 		cancionParada = True
 	else:
-		cancionCargada = siguienteCancion(lista, cancionCargada, reproductor)
+		siguienteCancion(lista, reproductor)
 
 			
 			

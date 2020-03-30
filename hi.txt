@@ -1,3 +1,5 @@
 Xandria;Ceili;/home/jesus/Music/Ceili.mp3
+je;jeje;/home/hi.mp3
 ;;/home/jesus/Music/velocidad_ida.mp3
 ;3;/home/jesus/Music/romp.mp3
+GloryHammer;aajajjaa;home/jesus/Music/The Hollywood Hootsman.mp3

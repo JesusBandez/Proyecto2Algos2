@@ -1,5 +1,6 @@
 import re
 import os.path as path
+import sys
 
 class Cancion(object):
 	"""Clase Cancion
@@ -30,16 +31,19 @@ class Cancion(object):
 
 		#Manejando errores en la inicializacion de la estructura
 		except:
-			print("Error Inicializando la estructura Canción")
+			print("Error Inicializando la Canción")
 			if not self.esUbicacionValida(ubicacion):
 				print("La ubicacion de la cancion no es válida o no existe el archivo")
 				print("Recuerde que la extenciones validas son .mp3 y .wav")
+				print("Usted introdujo: ", ubicacion)
 			if titulo == None:
-				print("La canción debe poseer un titulo")
+				print("La canción ubicada en: ", ubicacion, " debe poseer un titulo")
 			if interprete == None:
-				print("La canción debe poseer un interprete")
+				print("La canción ubicada en: ", ubicacion," debe poseer un interprete")
 			if ubicacion==None:
 				print("Debe indicar la ruta de la canción a crear")
+
+			sys.exit()
 
 	def esUbicacionValida(self, ubicacion : str) -> bool:
 		
