@@ -6,7 +6,7 @@ from pygame.locals import *
 import math
 import time
 
-pygame.init()
+
 
 
 # Manipulación del reproductor
@@ -21,12 +21,12 @@ def cargarOtroArchivo() -> str:
 			elif event.type == pygame.MOUSEBUTTONUP:				
 				coordenadas = pygame.mouse.get_pos()
 				if 200 <= coordenadas[0] <= 285 and 150 <= coordenadas[1] <= 190:
-					jugar_otra = "si"
+					otro = "si"
 				elif 450 <= coordenadas[0] <= 500 and 150 <= coordenadas[1] <= 190:
-					jugar_otra = "no"
+					otro = "no"
 				else:
 					coordenadas = (0,0)
-	return jugar_otra
+	return otro
 
 def cargarCanciones(lista:object, reproductor:object) -> object: # Hay que comprobar que el archivo sirve
 	ventana.blit(fondo, (0,0))	
@@ -142,8 +142,10 @@ def mostrarLista(lista:object) -> object:
 		pygame.display.flip()
 
 def reproducirCancion(reproductor:object) -> object:
-
-	reproductor.reproducir()
+	if not reproductor.estaTocandoCancion():
+		reproductor.reproducir()
+	else:
+		pass
 
 def siguienteCancion(lista:object, reproductor:object) -> object:
 	if reproductor is not None:
@@ -154,6 +156,11 @@ def siguienteCancion(lista:object, reproductor:object) -> object:
 			reproductor.parar()
 			reproductor.cargarCancion(cancionACargar)
 			reproductor.reproducir()
+
+			return reproductor.actual
+
+
+		return reproductor.actual
 			
 	
 
@@ -420,6 +427,8 @@ def mensajeDeAlgunasCancionesNoSeCargaron() -> "void":
 	pygame.display.flip()
 	pygame.time.delay(4000)
 
+# Inicializar pygame
+pygame.init()
 
 # Fuentes
 fuente = pygame.font.Font("fonts/BOOKOS.ttf", 40)
@@ -470,12 +479,11 @@ pygame.display.flip()
 # Se inicia con una lista de reproducción vacía
 lista = ArbolDeCanciones()
 reproductor = None
-cancionParada = True
 
 
 while True:
 
-	while reproductor == None or reproductor.estaTocandoCancion() or cancionParada:
+	while reproductor is None or reproductor.estaTocandoCancion() or reproductor.parado or reproductor.pausado:
 
 		
 
@@ -487,20 +495,22 @@ while True:
 
 				elif event.type == pygame.MOUSEBUTTONUP:
 
-					if pBotonPausa.collidepoint(pygame.mouse.get_pos()) and not cancionParada:
+					if (pBotonPausa.collidepoint(pygame.mouse.get_pos()) and reproductor is not None
+						and not reproductor.parado):
 						pausarCancion(reproductor)
-						cancionParada = True
+						
 
-					elif reproductor is not None and pBotonParar.collidepoint(pygame.mouse.get_pos()):
+					elif (pBotonParar.collidepoint(pygame.mouse.get_pos()) and reproductor is not None
+						and not reproductor.pausado):
 						pararCancion(reproductor)
-						cancionParada = True
+						
 
 					elif pBotonReproducir.collidepoint(pygame.mouse.get_pos()):
 						if reproductor is None:
 							mensajeDeDebeCargarCancion()
+
 						else:
-							reproducirCancion(reproductor)
-							cancionParada = False
+							reproducirCancion(reproductor)							
 							
 					elif pBotonCancionAnterior.collidepoint(pygame.mouse.get_pos()):
 						cancionAnterior(lista, reproductor)
@@ -521,8 +531,9 @@ while True:
 						exit()
 
 
+
 	if siguienteCancion(lista, reproductor) is reproductor.actual:
-		cancionParada = True
+		reproductor.parar()
 	else:
 		siguienteCancion(lista, reproductor)
 

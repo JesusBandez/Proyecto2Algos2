@@ -21,6 +21,9 @@ class Reproductor(object):
 		# Se establece que la canción no está pausada
 		self.pausado = False
 
+		# Se establece que la canción está parada
+		self.parado = True
+
 		# Inicializar la librería de audio
 		pygame.mixer.init()
 
@@ -46,6 +49,9 @@ class Reproductor(object):
 		# Se establece que no está pausado el reproductor
 		self.pausado = False
 
+		# Se establece que está parado el reproductor
+		self.parado = True
+
 		# Se carga la canción
 		pygame.mixer.music.load(cancion.ubicacion)
 
@@ -62,11 +68,14 @@ class Reproductor(object):
 		# Si la canción está pausada, entonces se continúa la reproducción
 		if self.pausado == True:
 			pygame.mixer.music.unpause()
-			self.pausado = False
+
 
 		# En cualquier otro caso, se reproduce la canción desde el principio
 		else:
 			pygame.mixer.music.play(0)
+			
+		self.pausado = False
+		self.parado = False
 
 		# Postcondicion
 		assert(self.estaTocandoCancion())
@@ -80,6 +89,9 @@ class Reproductor(object):
 
 		# Se establece que la canción no está pausada
 		self.pausado = False
+
+		# Se establece que está parado el reproductor
+		self.parado = True
 
 		# Detener la reproducción
 		pygame.mixer.music.stop()
@@ -96,6 +108,9 @@ class Reproductor(object):
 
 		# Establece que la canción está pausada
 		self.pausado = True
+
+		# Establece que la canción no está parada
+		self.parado = False
 
 		# Pausar la canción
 		pygame.mixer.music.pause()
