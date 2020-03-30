@@ -300,7 +300,10 @@ def eliminarCancion(lista, pYReferenciaACanciones:list) -> "void":
 						
 
 						if pYReferencia[0].collidepoint(posicionMouse):
-						
+							if pYReferencia[1] is cancionCargada:
+								mensajeDeNoSePuedeEliminar()
+								return
+
 							interprete = pYReferencia[1].interprete
 							titulo = pYReferencia[1].titulo
 							lista.eliminarCancion(interprete, titulo)
@@ -350,6 +353,15 @@ def mensajeDeDebeCargarCancion() -> "void":
 	ventana.blit(mensaje, (210, 130))
 	pygame.display.flip()
 	pygame.time.delay(600)
+
+def mensajeDeNoSePuedeEliminar() -> "void":
+	borra = pygame.transform.scale(fondo, (800, 119))
+	texto = "No se puede eliminar la canción que se está reproduciendo"
+	mensaje = fuentePequena.render(texto, 1, (255,255,255))
+	ventana.blit(borra, (0 , 290))
+	ventana.blit(mensaje, (25, 300))
+	pygame.display.flip()
+	pygame.time.delay(1200)
 
 
 
@@ -404,43 +416,49 @@ cancionParada = True
 
 while True:
 
-	dibujarReproductor(cancionCargada)
+	while reproductor == None or reproductor.estaTocandoCancion() or cancionParada:
 
-	for event in pygame.event.get():
-			if event.type == QUIT:
-				exit()
+		dibujarReproductor(cancionCargada)
 
-			elif event.type == pygame.MOUSEBUTTONUP:
-
-				if pBotonReproducir.collidepoint(pygame.mouse.get_pos()):
-					if cancionCargada is None:
-						mensajeDeDebeCargarCancion()
-					else:
-						reproducirCancion(reproductor)
-						cancionParada = False
-
-				elif pBotonSiguienteCancion.collidepoint(pygame.mouse.get_pos()):
-					cancionCargada = siguienteCancion(lista, cancionCargada, reproductor)
-
-				elif pBotonCargarCancion.collidepoint(pygame.mouse.get_pos()):
-					lista, cancionCargada, reproductor = cargarCanciones(lista, cancionCargada, reproductor)
-
-				elif pBotonMostrar.collidepoint(pygame.mouse.get_pos()):
-					mostrarLista(lista)
-
-				elif pBotonPausa.collidepoint(pygame.mouse.get_pos()) and not cancionParada:
-					pausarCancion(reproductor)
-					cancionParada = True
-
-				elif cancionCargada is not None and pBotonParar.collidepoint(pygame.mouse.get_pos()):
-					pararCancion(reproductor)
-					cancionParada = True
-
-				elif pBotonSalir.collidepoint(pygame.mouse.get_pos()):
+		for event in pygame.event.get():
+				if event.type == QUIT:
 					exit()
-	
-			if reproductor != None and not reproductor.estaTocandoCancion() and not cancionParada:
+
+				elif event.type == pygame.MOUSEBUTTONUP:
+
+					if pBotonReproducir.collidepoint(pygame.mouse.get_pos()):
+						if cancionCargada is None:
+							mensajeDeDebeCargarCancion()
+						else:
+							reproducirCancion(reproductor)
+							cancionParada = False
+							
+
+					elif pBotonSiguienteCancion.collidepoint(pygame.mouse.get_pos()):
+						cancionCargada = siguienteCancion(lista, cancionCargada, reproductor)
+
+					elif pBotonCargarCancion.collidepoint(pygame.mouse.get_pos()):
+						lista, cancionCargada, reproductor = cargarCanciones(lista, cancionCargada, reproductor)
+
+					elif pBotonMostrar.collidepoint(pygame.mouse.get_pos()):
+						mostrarLista(lista)
+
+					elif pBotonPausa.collidepoint(pygame.mouse.get_pos()) and not cancionParada:
+						pausarCancion(reproductor)
+						cancionParada = True
+
+					elif cancionCargada is not None and pBotonParar.collidepoint(pygame.mouse.get_pos()):
+						pararCancion(reproductor)
+						cancionParada = True
+
+					elif pBotonSalir.collidepoint(pygame.mouse.get_pos()):
+						exit()
+
+	cancionCargada = siguienteCancion(lista, cancionCargada, reproductor)
+			
+			
 				
-				cancionCargada = siguienteCancion(lista, cancionCargada, reproductor)
+				
+				
 
 			

@@ -45,7 +45,7 @@ class Reproductor(object):
 
 		# En cualquier otro caso, se reproduce la canción desde el principio
 		else:
-			pygame.mixer.music.play()
+			pygame.mixer.music.play(0)
 
 	def parar(self):
 		""" Método para parar la canción
