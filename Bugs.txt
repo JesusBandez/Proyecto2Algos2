@@ -1,4 +1,3 @@
-El programa se aborta al querer agregar un archivo que ya se agregó, de igual forma al tratar de agregar canciones que ya se agregaron
 
 Seria buena idea simplificar el codigo
 Faltan precondiciones y postcondiciones

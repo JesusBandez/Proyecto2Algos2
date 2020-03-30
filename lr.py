@@ -41,6 +41,65 @@ def esMenor(a1 : str, b1 : str, a2 : str, b2 : str):
 	return (a1 < a2 or (a1 == a2 and b1 < b2))
 
 
+#Se lleva un registro de los titulos por interprete para hacerlos unicos
+def asignarAInterpreteTituloUnico(T : object, interp : str, tit : str, ub:str) -> list:
+
+	assert(tit != None and interp !=None)
+
+	#Por defecto el Autor es Desconocido
+	if len(interp)>0:
+		interprete = interp
+
+	else:
+		interprete = "Desconocido"
+
+
+	#Si el interprete no esta pero se conoce la cancion
+	if (interprete not in T.d) and len(tit) > 0:
+		T.d.update({interprete:[[tit,1]]})
+		titulo = tit
+
+	#Si el interprete no esta y no se conoce la cancion
+	elif (interprete not in T.d) and len(tit) == 0:
+		T.d.update({interprete:[["Desconocido",1]]})
+		titulo = "Desconocido"
+
+	#Si el interprete esta...
+	else:
+		titulo = asignarTitulo(T.d.get(interprete),tit)
+
+	return [interprete, titulo, ub]
+
+def asignarTitulo(l : list, tit) -> str:
+
+	n = len(l)
+	assert(n>0)
+
+	#Por defecto
+	if len(tit) == 0:
+		titulo = "Desconocido"
+	else:
+		titulo = tit
+
+	assert(len(titulo)>0 and n > 0)
+
+	#Buscamos en la lista el titulo
+	i = 0
+	while i < n and l[i][0]!=titulo:
+		i = i + 1
+
+	#Si no esta, se agrega
+	if i == n:
+		l.append([titulo,1])
+
+	#si esta, se cuenta como repetido
+	else:
+
+		titulo = titulo + " {}".format(l[i][1])
+		l[i][1] = l[i][1] + 1
+
+
+	return titulo
 
 ####################################################
 
@@ -48,17 +107,29 @@ def esMenor(a1 : str, b1 : str, a2 : str, b2 : str):
 	un arbol binario de busqueda donde sus nodos son canciones
 	ordenadas por autor y titulo lexicograficamente
 """
+
+
 class ArbolDeCanciones(object):
+
+	
 	
 	def __init__(self):
+
+		#NodoCancion Raiz
 		self.root = None
+
+		#Catalogo de Autores-Titulos
+		self.d = {}
+
+
 
 	def agregarLista(self, file : str) ->'void':
 		f = open(file, 'r')
 		for l in f.readlines():
 			a = l.split(';')
 			a[2] = a[2].rstrip('\n')
-			self.insertarCancion(a[0],a[1],a[2])
+			b = asignarAInterpreteTituloUnico(self,a[0],a[1],a[2])
+			self.insertarCancion(b[0],b[1],b[2])
 
 		f.close()
 
@@ -147,6 +218,7 @@ class ArbolDeCanciones(object):
 		#Si ta existia, se informa pero no se hace nada
 		else:
 			pass
+			#print("La Cancion ya estaba cargada en la lista")
 
 
 	"""Retorna una lista de Canciones ordenada lixicograficamente con respecto a
