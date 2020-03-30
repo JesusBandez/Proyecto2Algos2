@@ -313,8 +313,8 @@ def eliminarCancion(lista, pYReferenciaACanciones:list) -> "void":
 					return
 
 def botonesDeNavegacion() -> object:
-	p = ventana.blit(flechaDerecha, (590, 300))
-	q = ventana.blit(flechaIzquierda, (490, 300))
+	p = ventana.blit(flechaDerecha, (590, 279))
+	q = ventana.blit(flechaIzquierda, (480, 279))
 	return p, q
 
 # Mensajes
