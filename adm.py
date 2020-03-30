@@ -229,52 +229,97 @@ def mostrarLista(lista:object) -> "void":
 		# a al nodo de la canció en el arbol
 		pYReferenciaACanciones = mostrarCancionesEnSecuenciaParcial(canciones[ini:fin])
 
+		# Se iteran entre los eventos de pygame
 		for event in pygame.event.get():
+
+				# Si el usuario da a salir, se aborta el programa
 				if event.type == QUIT:
 					exit()
 
 				elif event.type == pygame.MOUSEBUTTONUP:
 
+					# Si el usuario pulsa el botón de ir a la derecha
+					# y no se han mostrado todas las canciones, se 
+					# avanza en la lista
 					if (pFlechaDerecha.collidepoint(pygame.mouse.get_pos())
 						and fin < len(canciones)):
+
+						# Se aumentan las variables que corresponden
+						# al pedazo de la lista que contiene las canciones
+						# que se están mostrando
 						ini = ini + 8
 						fin = fin + 8
 
+					# Si el usuario pulsa al botón de ir a la izquierda
+					# y no se está al principio de la lista, se retrocede
+					# en la lista
 					elif (pFlechaizquierda.collidepoint(pygame.mouse.get_pos())
 						and ini > 0):
+
+						# Se reducen las variables que corresponden al
+						# pedazo de lista que contiene las canciones
+						# que se están mostrando
 						ini = ini - 8
 						fin = fin - 8
 
+					# Si se pulsa al botón de eliminar una canción, se
+					# entra al modo de eliminar canción
 					elif pEliminar.collidepoint(pygame.mouse.get_pos()):
 						eliminarCancion(lista, pYReferenciaACanciones)
-						
+					
+					# Si el usuario pulsa al botón volver, se retorna
+					# a los controles del reproductor
 					elif pVolver.collidepoint(pygame.mouse.get_pos()):
 						return
 
+		# Se actualiza la pantalla de la interfaz
 		pygame.display.flip()
 
-def reproducirCancion(reproductor:object) -> object:
+def reproducirCancion(reproductor:object) -> "void":
+	""" Procedimiento para iniciar la reproducción de una cancion
+	"""
+
+	# Si no se está reproduciendo una canción, se reproduce
 	if not reproductor.estaTocandoCancion():
 		reproductor.reproducir()
+
+	# Si ya hay una canción reproduciendose, no se hace nada
 	else:
 		pass
 
 def siguienteCancion(lista:object, reproductor:object) -> object:
+	""" Funcion que carga y reproduce la canción que sigue a la que está 
+	sonando. Retorna la canción que está sonando actualmente
+	"""
+
+	# Si ya se ha creado un reproductor
 	if reproductor is not None:
-		nodoCancion = lista.buscarCancion(lista.root, reproductor.actual.interprete, reproductor.actual.titulo)
+
+		# Se busca el nodo canción de la canción que está sonando
+		nodoCancion = lista.buscarCancion(lista.root, 
+			reproductor.actual.interprete, reproductor.actual.titulo)
+
+		# Se obtiene el sucesor del nodo canción conseguido
 		cancionACargar = lista.sucesor(nodoCancion)
+
+		# Si el nodo tiene un sucesor
 		if cancionACargar is not None:
+			# se obtiene la canción a cargar
 			cancionACargar = cancionACargar.cancion
+
+			# Se detiene la reproducción de la canción actual, se carga
+			# la sucesora y se reproduce
 			reproductor.parar()
 			reproductor.cargarCancion(cancionACargar)
 			reproductor.reproducir()
 
+			# Se retorna la cancion que se reproduce actualmente, la cual
+			# es la nueva que ha sido cargada
 			return reproductor.actual
 
-
+		# Si el nodo no tiene un sucesor,, entonces se retorna la misma
+		# canción que está sonando
 		return reproductor.actual
-			
-	
 
 def prepararReproductor(cancionACargar:object) -> "void":
 	
@@ -489,33 +534,61 @@ def cancelar() -> object:
 	return cCancelar
 
 def eliminarCancion(lista, pYReferenciaACanciones:list) -> "void":
+	""" Procedimiento para eliminar una canción de la lista de 
+	reproducción
 
+	lista: Arbol Binario con las canciones
+	pYReferenciaACanciones: Arreglo de arreglos de tamaño 2, que contienen
+		en su primera casilla la posicion de las canciones y en la segunda
+		casilla una referencia a la canción
+	"""
+
+	# Se muestra un mensaje de eliminar en la interfaz
 	mensajeDeEliminar()
 
 	while True:
-
+		# Se iteran entre los eventos en pygame
 		for event in pygame.event.get():
+
+				# Si se pulsa el botón de salir, se sale el programa
 				if event.type == QUIT:
 					exit()
 
+				# Si el usuario pulsa con el mouse
 				elif event.type == pygame.MOUSEBUTTONUP:
+					# Guardar la posicion del mouse
 					posicionMouse = pygame.mouse.get_pos()
 
+					# iterar entre las arreglos de tamaño 2
 					for pYReferencia in pYReferenciaACanciones:
-						
 
+						# Si la posición de una de las canciones corresponde
+						# con la posición del mouse
 						if pYReferencia[0].collidepoint(posicionMouse):
+
+							# Si la cancion que está sonando es la que se 
+							# pulsó, se avisa al usuario que no se puede
+							# eliminar la canción y se sale del modo
+							# eliminar
 							if pYReferencia[1] is reproductor.actual:
 								mensajeDeNoSePuedeEliminar()
 								return
-
+							# Si no, se obtiene el interprete y el
+							# titulo de la canción, y se elimina de
+							# la lista de reproducción
 							interprete = pYReferencia[1].interprete
 							titulo = pYReferencia[1].titulo
 							lista.eliminarCancion(interprete, titulo)
+
+							# Se notifica al usuario que se ha eliminado
+							# la canción
 							mensajeDeEliminado()
 
-							return					
+							return	
+					# Si el usuario no pulsó sobre ninguna canción entoces
+					# se sale del modo eliminar			
 					return
+
 
 def botonesDeNavegacion() -> object:
 	""" Funcion que dibuja dos botones con forma de flecha y retorna
@@ -541,6 +614,9 @@ def mensajeCargarOtroArchivo() -> "void":
 	pygame.display.flip()
 
 def mensajeDeEliminar() -> "void":
+	""" Procedimiento para mostrar un mensaje de seleccionar una cancion
+	para eliminar en la interfaz
+	"""
 	mensaje = fuentePequena.render("Seleccione la canción", 1, (255,255,255))
 	ventana.blit(mensaje, (160, 290))
 	mensaje = fuentePequena.render("a eliminar", 1, (255,255,255))
@@ -563,6 +639,9 @@ def mensajeDeDebeCargarCancion() -> "void":
 	pygame.time.delay(600)
 
 def mensajeDeNoSePuedeEliminar() -> "void":
+	""" Procedimiento para mostrar en pantalla un mensaje al usuario
+	de que no se puede eliminar la canción que seleccionó
+	"""
 	borra = pygame.transform.scale(placa, (800, 119))
 	texto = "No se puede eliminar la canción que se está reproduciendo"
 	mensaje = fuentePequena.render(texto, 1, (255,255,255))
