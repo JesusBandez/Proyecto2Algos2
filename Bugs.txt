@@ -1,6 +1,6 @@
 El programa se aborta al querer agregar un archivo que ya se agregó, de igual forma al tratar de agregar canciones que ya se agregaron
-No hay forma de "reiniciar" el programa, sería un problema?
+
 Seria buena idea simplificar el codigo
 Faltan precondiciones y postcondiciones
 Faltan los comentarios
-Hay que cambiar todas las imagenes en images
+

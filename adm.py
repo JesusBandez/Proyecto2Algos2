@@ -9,8 +9,6 @@ import time
 pygame.init()
 
 
-
-
 # Manipulación del reproductor
 def cargarOtroArchivo() -> str:
 	
@@ -41,14 +39,20 @@ def cargarCanciones(lista:object, cancionCargada:object, reproductor:object) -> 
 		if nombreArchivo is None:
 			archivos = []
 			break
+		try:
+			open(nombreArchivo, "r")
+			archivos.append(nombreArchivo)
+			otro = cargarOtroArchivo()		
+		except:
+			mensajeDeErrorAlAbrirArchivo()
+			
 
-		archivos.append(nombreArchivo)
-		otro = cargarOtroArchivo()
+
 
 	for nombre in archivos:
 		lista.agregarLista(nombre)
 		
-	if len(archivos) > 0:
+	if len(archivos) > 0 and reproductor is None:
 		cancionCargada = lista.minInterprete(lista.root).cancion
 		reproductor = prepararReproductor(cancionCargada)		
 
@@ -76,11 +80,10 @@ def pedirArchivo() -> str:
 					caracteres = caracteres[0:len(caracteres)-1]
 
 				elif event.key == K_RETURN:
-					caracteres = (caracteres[0] 
-						+ caracteres[1:len(caracteres)].lower())
-					asignado = caracteres	
+					if len(caracteres) > 0:						
+						asignado = caracteres	
 
-				elif event.key == K_SPACE or len(caracteres) > 40:
+				elif len(caracteres) > 40:
 					pass
 
 				else:						
@@ -210,7 +213,7 @@ def dibujarReproductor(cancionCargada:object) -> "void":
 	ventana.blit(botonMostrar, (580, 35))
 	ventana.blit(botonSalir, (715, 145))
 	ventana.blit(cancionActual, (25, 225))
-
+	mensajesSobreBotones()
 	suenaActualmente(cancionCargada)
 
 def suenaActualmente(cancionCargada:object):
@@ -353,7 +356,7 @@ def mensajeDeEliminar() -> "void":
 	pygame.display.flip()
 
 def mensajeDeEliminado() -> "void":
-	borra = pygame.transform.scale(fondo, (300, 200))
+	borra = pygame.transform.scale(placa, (300, 200))
 	mensaje = fuentePequena.render("Cancion eliminada", 1, (255,255,255))
 	ventana.blit(borra, (160, 290))
 	ventana.blit(mensaje, (160, 305))
@@ -368,7 +371,7 @@ def mensajeDeDebeCargarCancion() -> "void":
 	pygame.time.delay(600)
 
 def mensajeDeNoSePuedeEliminar() -> "void":
-	borra = pygame.transform.scale(fondo, (800, 119))
+	borra = pygame.transform.scale(placa, (800, 119))
 	texto = "No se puede eliminar la canción que se está reproduciendo"
 	mensaje = fuentePequena.render(texto, 1, (255,255,255))
 	ventana.blit(borra, (0 , 290))
@@ -376,11 +379,27 @@ def mensajeDeNoSePuedeEliminar() -> "void":
 	pygame.display.flip()
 	pygame.time.delay(1200)
 
+def mensajesSobreBotones() -> "void":	
+	mensaje = fuenteDiminuta.render("Cargar canciones:", 1, (220,220,220))
+	ventana.blit(mensaje, (685, 12))
+	mensaje = fuenteDiminuta.render("Mostrar lista", 1, (220,220,220))
+	mensaje2 = fuenteDiminuta.render("de reproduccion:", 1, (220,220,220))
+	ventana.blit(mensaje, (571, 15))
+	ventana.blit(mensaje2, (571, 25))
+
+def mensajeDeErrorAlAbrirArchivo() -> "void":
+	ventana.blit(fondo, (0,0))
+	texto = "No se pudo abrir ese archivo"
+	mensaje = fuente.render(texto, 1, (255,255,255))
+	ventana.blit(mensaje, (150, 100))
+	pygame.display.flip()
+	pygame.time.delay(1000)
 
 
 # Fuentes
 fuente = pygame.font.Font("fonts/BOOKOS.ttf", 40)
 fuentePequena = pygame.font.Font("fonts/BOOKOS.ttf", 25)
+fuenteDiminuta = pygame.font.Font("fonts/BOOKOS.ttf", 10)
 
 # Imagenes
 botonCargarCancion = pygame.image.load("images/LoadButton.png")
@@ -395,6 +414,7 @@ cancionActual = pygame.image.load("images/CurrentSong.png")
 panelDeCanciones = pygame.image.load("images/ShowSongsPanel.png")
 flechaDerecha = pygame.image.load("images/RightArrow.png")
 flechaIzquierda = pygame.image.load("images/LeftArrow.png")
+placa = pygame.image.load("images/Borra.png")
 
 fondo = pygame.image.load("images/Background.png")
 
@@ -432,6 +452,8 @@ cancionParada = True
 while True:
 
 	while reproductor == None or reproductor.estaTocandoCancion() or cancionParada:
+
+		
 
 		dibujarReproductor(cancionCargada)
 
