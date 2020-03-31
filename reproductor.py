@@ -78,7 +78,16 @@ class Reproductor(object):
 		self.parado = False
 
 		# Postcondicion
-		assert(self.estaTocandoCancion())
+		
+		# assert(self.estaTocandoCancion())
+		
+		# Esta postcondición se deja como un comentario porque hay 
+		# canciones que el reproductor de pygame no puede reproducir
+		# Si eso pasaría, el programa terminaría abortandose porque
+		# el reproductor no detecta que se está reproduciendo una canción
+		# Al dejarla comentada, el programa solo pasa la canción a la 
+		# siguiente o se detiene si no hay siguiente
+		
 
 	def parar(self):
 		""" Método para parar la canción

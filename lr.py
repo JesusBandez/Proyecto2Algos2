@@ -1,14 +1,27 @@
+#########################################
+#			LISTA DE REPRODUCCION 		#
+#	En este archivo encontrará:			#
+# -> Estructura NodoCancion 			#
+# -> Estructura Arbol de Canciones 		#
+#										#
+#	Requerimientos: 					#
+# -> Modulo cancion.py   				#
+#										#
+#########################################
+
+
+
 import cancion
 
 
-#Estructura Nodo que contiene una cancion para un ABB
-class NodoCancion(object) :
-	def __init__(self, interprete : str, titulo : str, ubicacion : str):
-		self.cancion = cancion.Cancion(interprete, titulo, ubicacion)
-		self.p = None
-		self.left = None
-		self.right = None
 
+"""
+	A continuación un conjunto de funciones que facilitan
+	la creación de las estructuras de datos
+	antes especificadas
+"""
+
+##########################################################
 
 #Invariante de la representacion de Arboles de busqueda de canciones
 def esArbolDeBusqCancion(T : object) -> bool:
@@ -36,12 +49,19 @@ def deArbolASecuencia(subTree:object) -> list:
 			seq = seq + deArbolASecuencia(subTree.right)
 	return seq
 
+
 # Orden lexicografico entre el par <a1,b1> y <a2,b2> de strings
+# donde <a1,b1> < <a2,b2> sii (a1 < a2) \/ (a1 == a2 /\ b1 < b2)
+
 def esMenor(a1 : str, b1 : str, a2 : str, b2 : str):
 	return (a1 < a2 or (a1 == a2 and b1 < b2))
 
 
-#Se lleva un registro de los titulos por interprete para hacerlos unicos
+"""Se lleva un registro de los titulos por interprete para cada lista de reproduccion
+para hacerlos unicos. Luego si se desea introducir dos canciones iguales, la segunda cancion
+es diferenciada con un indice
+"""
+
 def asignarAInterpreteTituloUnico(T : object, interp : str, tit : str, ub:str) -> list:
 
 	assert(tit != None and interp !=None)
@@ -70,6 +90,8 @@ def asignarAInterpreteTituloUnico(T : object, interp : str, tit : str, ub:str) -
 
 	return [interprete, titulo, ub]
 
+
+#Funcion auxiliar para asiganarAInterpreteTituloUnico
 def asignarTitulo(l : list, tit) -> str:
 
 	n = len(l)
@@ -103,15 +125,88 @@ def asignarTitulo(l : list, tit) -> str:
 
 ####################################################
 
+"""A continuacion la implementación de los TAD
+ NodoCancion y ArbolDeCanciones
+"""
+
+
+"""
+				ESTRUCTURA NODO
+La estructura Nodo contiene una cancion para un ABB
+
+						^
+						| self.p
+						|
+				------------------
+	self.left	|	----------	 |     self.right
+		--------|	|Cancion |	 |--------
+		|		|	----------	 |		 |
+		|		------------------		 |
+		V 								 V
+
+self.p es el padre del nodo
+self.left es el hijo izquierdo del nodo
+self.right es el hijo derecho del nodo
+
+"""
+class NodoCancion(object) :
+
+	"""Constructor de la Clase NodoCancion
+
+		INPUT:
+		Requiere especificar los atributos:
+		Luego de los tres puntos un ejemplo valido
+		-> Interprete ... Chopin
+		-> Titulo     ... Vals de Primavera
+		-> ubicación  ... /home/usuario/Documentos/cancion.mp3
+		de la cancion
+		que ira dentro del nodo
+
+		OUTPUT:
+		Tipo de dato NodoCancion, con la cancion de input dentro.
+		Sin Padre ni hijos
+
+	"""
+	def __init__(self, interprete : str, titulo : str, ubicacion : str):
+		self.cancion = cancion.Cancion(interprete, titulo, ubicacion)
+		self.p = None
+		self.left = None
+		self.right = None
+
+
+
+
+
 """Estructura arbol de canciones, TAD que implementa
 	un arbol binario de busqueda donde sus nodos son canciones
-	ordenadas por autor y titulo lexicograficamente
+	ordenadas lexicograficamente por autor y si dos canciones
+	tienen al mismo autor se prosigue a comparar lexicograficamente
+	sus titulos.
+
+							ESTRUCTURA ARBOL DE CANCIONES
+
+									  ___________
+					 ----------------| self.root |---------------
+					 |				  ¯¯¯¯¯¯¯¯¯¯¯				|
+		  	 ________V______ 						   _________V_____
+		----| Nodo  Cancion |----				  ----| Nodo  Cancion |----		
+		|	 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯	|				  |	  ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯   |
+ _______V_______ 	 	 _______V_______		__V____________		______V________
+| Nodo  Cancion |		| Nodo  Cancion |	   | Nodo  Cancion |   | Nodo  Cancion |
+¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯		 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯		¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯		¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+
+
+self.root es la raiz del arbol
+
 """
 
 
 class ArbolDeCanciones(object):
 
-	
+	"""Constructor:
+	Crea una instancia de ArbolDeCanciones inicialmente vacia
+	con Raiz = None
+	"""	
 	
 	def __init__(self):
 
@@ -122,7 +217,18 @@ class ArbolDeCanciones(object):
 		self.d = {}
 
 
+	"""
+	Metodo que permite agregar al ArbolDeCanciones
+	canciones guardadas en un archivo de texto plano
+	donde por cada linea se encuentras registradas
+	las especificaciones de la cancion 
+	separadas por punto y coma ';' :
 
+	Ejemplo de una linea contenida en el archivo:
+	Mi_Interprete_Favorto;Cancion_de_él;/home/usuario/ruta/cancion_de_él.mp3
+
+	Input: filepath
+	"""
 	def agregarLista(self, file : str) ->'void':
 		f = open(file, 'r')
 		for l in f.readlines():
@@ -133,7 +239,13 @@ class ArbolDeCanciones(object):
 
 		f.close()
 
-	#Borra el nodo mediante su interprete y titulo
+	"""Se borra un NodoCancion del ArbolDeCancones especificado mediante el interprete y
+	el titulo de la cancion que el nodo contiene.
+
+	Input: Interprete de la cancion a borrar
+		   Titulo de la cancion a borrar
+
+	"""
 	def eliminarCancion(self, interprete, titulo) -> 'void':
 
 		z = self.buscarCancion(self.root, interprete, titulo)
@@ -165,7 +277,7 @@ class ArbolDeCanciones(object):
 			print("El elemento no pertenece a la lista")
 	
 
-	"""Metodo que retorna un subarbol al encontrar una cancion,
+	"""Metodo que retorna un nodo, raiz de un subarbol, al encontrar una cancion,
 		dado su interprete y titulo
 	"""
 	def buscarCancion(self, subTree, interprete, titulo) -> NodoCancion:
@@ -185,7 +297,7 @@ class ArbolDeCanciones(object):
 			return self.buscarCancion(subTree.right, interprete, titulo)
 
 
-	"""Se Inserta una Cancion en el ABB como un nodoCancion, 
+	"""Se Inserta una Cancion en el ABB como un NodoCancion, 
 		dado el interprete, titulo y ubicacion
 	"""
 	def insertarCancion(self, interprete, titulo, ubicacion) -> 'void':
@@ -242,14 +354,14 @@ class ArbolDeCanciones(object):
 			print(l[x].aString())
 
 
-	#Retorna el nodoCancion con Interprete Minimo en el arbol
+	#Retorna el NodoCancion con Interprete Minimo en el arbol
 	def minInterprete(self, x) -> NodoCancion:
 
 		while x.left != None:
 			x = x.left
 		return x
 
-	#Retorna el nodoCancion con Interprete Maximo en el subarbol x
+	#Retorna el NodoCancion con Interprete Maximo en el subarbol x
 	def maxInterprete(self, x) -> NodoCancion:
 
 		while x.right != None:
@@ -257,7 +369,7 @@ class ArbolDeCanciones(object):
 		return x
 
 
-	#Retorna el nodoCancion con titulo Maximo en el arbol
+	#Retorna el NodoCancion con titulo Maximo en el arbol
 	def maxTitulo(self) -> NodoCancion:
 		l = deArbolASecuencia(self.root)
 		max = None
@@ -267,7 +379,7 @@ class ArbolDeCanciones(object):
 
 		return max
 
-	#Retorna el nodoCancion con titulo Maximo en el arbol
+	#Retorna el NodoCancion con titulo Maximo en el arbol
 	def minTitulo(self) -> NodoCancion:
 		l = deArbolASecuencia(self.root)
 		min = None
@@ -290,7 +402,7 @@ class ArbolDeCanciones(object):
 			v.p = u.p
 
 
-	#Retorna el nodoCancion Predecesor de un nodoCancion k
+	#Retorna el NodoCancion Predecesor de un NodoCancion k
 	def predecesor(self,k) -> NodoCancion:
 
 		try:
@@ -304,7 +416,7 @@ class ArbolDeCanciones(object):
 			return y
 		except: return None
 
-	#Retorna el nodoCancion Sucesor de una nodoCancion k
+	#Retorna el NodoCancion Sucesor de una NodoCancion k
 	def sucesor(self,k) -> NodoCancion:
 		try:
 			if k.right!= None:

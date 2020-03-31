@@ -1,5 +1,0 @@
-
-Seria buena idea simplificar el codigo
-Faltan precondiciones y postcondiciones
-Faltan los comentarios
-
