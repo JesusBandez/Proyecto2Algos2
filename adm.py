@@ -277,6 +277,9 @@ def mostrarLista(lista:object) -> "void":
 
 def reproducirCancion(reproductor:object) -> "void":
 	""" Procedimiento para iniciar la reproducción de una cancion
+
+	reproductor: objeto de tipo reproductor que ya tiene una cancion
+	cargada
 	"""
 
 	# Si no se está reproduciendo una canción, se reproduce
@@ -290,6 +293,12 @@ def reproducirCancion(reproductor:object) -> "void":
 def siguienteCancion(lista:object, reproductor:object) -> object:
 	""" Funcion que carga y reproduce la canción que sigue a la que está 
 	sonando. Retorna la canción que está sonando actualmente
+
+	lista: Objeto de tipo arbol de canciones que contiene las canciones
+		a reproducir
+
+	reproductor: Objeto de tipo reproductor donde se reproducen las 
+	canciones
 	"""
 
 	# Si ya se ha creado un reproductor
@@ -322,30 +331,103 @@ def siguienteCancion(lista:object, reproductor:object) -> object:
 		return reproductor.actual
 
 def prepararReproductor(cancionACargar:object) -> "void":
+	""" Prodecimiento que define un nuevo objeto de tipo reproductor
+	lo carga con cancionACargar y lo retorna
+
+	cancionACargar: objeto del tipo cancion que se cargará en el 
+	reproductor
+	"""
 	
+	# Se refine el objeto a partir de la clase Reproductor()
 	reproductor = Reproductor(cancionACargar)	
 
+	# Se retorna el reproductor
 	return reproductor
 
 def pausarCancion(reproductor:object) -> "void":
+	""" Procedimiento que pausa la reproducción de la canción
+
+	reproductor: Objeto de tipo reproductor donde se está reproduciendo
+		la cancion
+	"""
 
 	reproductor.pausa()
 
 def pararCancion(reproductor:object) -> "void":
+	""" Procedimiento para detener la reproducción de una canción
+	Cuando la canción es parada, al reproducirse otra vez iniciará desde
+	el principio
+
+	reproductor: Objeto de tipo reproductor donde se está reproduciendo
+		la cancion
+	"""
 
 	reproductor.parar()
 
-def cancionAnterior(lista:object, reproductor:object) -> object:
+def cancionAnterior(lista:object, reproductor:object) -> "void":
+	""" Procedimiento para retroceder la canción en el reproductor
+
+	lista: objeto de tipo Arbol de Canciones que tiene la lista de
+		reproducción
+
+	reproductor: objeto de tipo reproductor que se está usando para 
+		reproducir las canciones
+	"""
+
+	# Si se ha creado un reproductor
 	if reproductor is not None:
-		nodoCancion = lista.buscarCancion(lista.root, reproductor.actual.interprete, reproductor.actual.titulo)
+
+		# Se obtiene el nodo al que pertenece la canción que está cargada
+		# actualmente
+		nodoCancion = lista.buscarCancion(lista.root, 
+			reproductor.actual.interprete, reproductor.actual.titulo)
+		# Se busca la canción anterior en orden lexicográfico en el
+		# arbol de canciones
 		cancionACargar = lista.predecesor(nodoCancion)
+
+		# Si el nodocanción al que pertenece la cancion cargada en el 
+		# reproductor tiene un predecesor
 		if cancionACargar is not None:
+			# Se obtiene la cancion del nodo predecesor
 			cancionACargar = cancionACargar.cancion
+
+			# Se detiene la reproduccion actual, se carga la canción
+			# predecesora 
 			reproductor.parar()
 			reproductor.cargarCancion(cancionACargar)
 			reproductor.reproducir()
-			
-	
+
+def cancionQueSigue(lista:object, reproductor:object) -> object:
+	""" Funcion que retorna la cancion sucesora a la cancion actual
+	en el reproductor
+
+	lista: lista de reproducción con las canciones
+	reproductor: objeto tipo reproductor donde se reproducen las 
+		canciones
+	"""
+
+	# Si ya se ha creado un reproductor
+	if reproductor is not None:
+
+		# Se busca el nodo canción de la canción que está sonando
+		nodoCancion = lista.buscarCancion(lista.root, 
+			reproductor.actual.interprete, reproductor.actual.titulo)
+
+		# Se obtiene el sucesor del nodo canción conseguido
+		cancionASucesora = lista.sucesor(nodoCancion)
+
+		# Si el nodo tiene un sucesor
+		if cancionASucesora is not None:
+			# Se obtiene la canción a sucesora
+			cancionASucesora = cancionASucesora.cancion
+
+			# Se retorna la canción sucesora
+			return cancionASucesora
+
+	# Si el reproductor es None o No hay cancion sucesora,
+	# se retorna None
+	return None
+
 
 # Dibujo en la interfaz
 def mostrarCancionesEnSecuenciaParcial(canciones:list) -> list:
@@ -355,6 +437,8 @@ def mostrarCancionesEnSecuenciaParcial(canciones:list) -> list:
 	de la lista. Tambien, un arreglo que contiene arreglos de tamaño dos
 	Los cuales tiene en su primera casilla la posición en la pantalla de 
 	la canción y una referencia a la canción
+
+	canciones: arreglo de objetos tipo cancion
 	"""
 	# Se establece la distancia a la que se dibujarán las canciones
 	# en la pantalla
@@ -398,6 +482,10 @@ def mostrarCancionesEnSecuenciaParcial(canciones:list) -> list:
 	return pYReferenciaACanciones
 
 def dibujarReproductor(reproductor:object) -> "void":
+	""" Procedimiento para dibujar los controles del reproductor
+
+	reproductor: Objeto de tipo reproductor
+	"""
 	# Dibujar fondo
 	ventana.blit(fondo, (0,0))
 
@@ -411,15 +499,32 @@ def dibujarReproductor(reproductor:object) -> "void":
 	ventana.blit(botonMostrar, (580, 35))
 	ventana.blit(botonSalir, (715, 145))
 	ventana.blit(cancionActual, (25, 225))
+
+	# Dibujar los mensajes de ayuda sobre los botones cargar y mostrar
 	mensajesSobreBotones()
+
+	# Dibujar el artista y el titulo de la canción que está sonando
 	suenaActualmente(reproductor)
 
-def suenaActualmente(reproductor:object):
+def suenaActualmente(reproductor:object) -> "void":
+	""" Procedimiento que muestra en la pantalla del reproductor el 
+	nombre del artista y el titulo de la canción cargada actualmente
+	Se evita que algunos de los dos no quepa en la pantalla en caso
+	de ser muy largo con la función escritura parcial
+
+	reproductor: Objeto de tipo reproductor donde se está reproduciendo
+		la cancion
+	"""
+
+	# Muestra un mensaje informativo sobre el tablero
 	texto = "Suena:"
 	mensaje = fuente.render(texto, 1, (255, 255,255))
 	ventana.blit(mensaje, (50, 170))
 
+	# Si ya se ha creado el reproductor
 	if reproductor is not None:
+
+		# Se muestra en pantalla la cancion que está cargada
 		interprete = convertirAMinuscula(reproductor.actual.interprete)
 		texto = "Artista: " + escrituraParcial(interprete, 30, 4)
 		mensaje = fuente.render(texto, 1, (255,255,255))
@@ -430,12 +535,21 @@ def suenaActualmente(reproductor:object):
 		mensaje = fuente.render(texto, 1, (255,255,255))
 		ventana.blit(mensaje, (30, 275))
 
+	# Se actualiza la pantalla del reproductor
 	pygame.display.flip()
 
 # Manipulación y modificación de strings
-def escribir(caracteres:[str]) -> "void":
+def escribir(caracteres:list) -> "void":
+	""" Procedimiento para escribir a tiempo real los caracteres que 
+	ha ingresado el usuario
 
+	caracteres: string con los caracteres que ha ingresado el usuario
+	"""
+
+	# Se dibuja el fondo
 	ventana.blit(fondo, (0,0))
+
+	# Se muestra el botón cancelar
 	cancelar()
 	texto = "Ingrese el nombre o la ruta del archivo con la lista de canciones: "
 	mensaje = fuentePequena.render(texto, 1, (255,255,255))
@@ -502,7 +616,12 @@ def escrituraParcial(frase: object, maxCaracteres:int, tiempoDetenido:int) -> st
 			
 			return pedazos[i]
 
-def convertirAMinuscula(frase:list) -> list:
+def convertirAMinuscula(frase:str) -> list:
+	""" Funcion usada para conver en minúscula todas las letras
+	después de la primera en una frase
+
+	frase: string con la frase a convertir en minusculas
+	"""
 	temp = frase[0:1]
 	temp2 = frase[1:len(frase)].lower()
 	frase = temp + temp2
@@ -528,6 +647,10 @@ def botonEliminar() -> object:
 	return eliminar
 
 def cancelar() -> object:
+	""" función que muestra en pantalla un botón para cancelar
+	y poder salir a la pantalla del reproductor. La función retorna
+	la posicion del botón en la pantalla
+	"""
 	cancelar = fuente.render("Cancelar", 1, (255, 255, 255))
 	cCancelar = ventana.blit(cancelar, (600, 300))
 	
@@ -600,23 +723,37 @@ def botonesDeNavegacion() -> object:
 
 # Mensajes
 def mensajeCargarOtroArchivo() -> "void":
+	""" Procedimiento que muestra un mensaje y escribe los botones
+	que puede pulsar el usuario cuando se le pregunta si quiere cargar
+	otro archivo
+	"""
 
+	# Dibujar el fondo
 	ventana.blit(fondo, (0,0))
+
+	# Mensaje de pregunta
 	texto = "¿Quiere cargar otro archivo?"
 	mensaje = fuente.render(texto, 1, (255,255,255))
 	ventana.blit(mensaje, (150,50))
+
+	# Dibujar "Boton" sí
 	texto = "Sí"
 	mensaje = fuente.render(texto, 1, (255,255,255))
 	ventana.blit(mensaje, (250,150))
+
+	# Dibujar "Boton" no
 	texto = "No"
 	mensaje = fuente.render(texto, 1, (255,255,255))
 	ventana.blit(mensaje, (450,150))
+
+	# Actualizar pantalla 
 	pygame.display.flip()
 
 def mensajeDeEliminar() -> "void":
 	""" Procedimiento para mostrar un mensaje de seleccionar una cancion
 	para eliminar en la interfaz
 	"""
+
 	mensaje = fuentePequena.render("Seleccione la canción", 1, (255,255,255))
 	ventana.blit(mensaje, (160, 290))
 	mensaje = fuentePequena.render("a eliminar", 1, (255,255,255))
@@ -624,71 +761,133 @@ def mensajeDeEliminar() -> "void":
 	pygame.display.flip()
 
 def mensajeDeEliminado() -> "void":
+	""" Procedimiento para informar al usuario que se ha eliminado la 
+	canción que seleccionó
+	"""
+
+	# Se carga una imagen del mismo color del fondo de la pantalla
 	borra = pygame.transform.scale(placa, (300, 200))
+
+	# Se prepara el mensaje
 	mensaje = fuentePequena.render("Cancion eliminada", 1, (255,255,255))
+
+	# Se dibuja la "borra" en la pantalla y sobre ella se escribe el mensaje
 	ventana.blit(borra, (160, 290))
 	ventana.blit(mensaje, (160, 305))
+
+	# Se actualiza la pantalla y se espera un momento antes de actualizar
+	# el fondo
 	pygame.display.flip()
 	pygame.time.delay(400)
 
 def mensajeDeDebeCargarCancion() -> "void":
+	""" Se muestra al usuario un mensaje cuando trata de reproducir una
+	canción sin antes haber cargado una lista
+	"""
+	# Preparar el mensaje
 	texto = "Debe cargar una lista de reproducción"
 	mensaje = fuentePequena.render(texto, 1, (255,255,255))
 	ventana.blit(mensaje, (210, 130))
-	pygame.display.flip()
+
+	# Actualizar la pantalla y detener el programa un momento
+	pygame.display.flip()	
 	pygame.time.delay(600)
 
 def mensajeDeNoSePuedeEliminar() -> "void":
 	""" Procedimiento para mostrar en pantalla un mensaje al usuario
 	de que no se puede eliminar la canción que seleccionó
 	"""
+	# Se carga una imagen que funcionará como "borra"
 	borra = pygame.transform.scale(placa, (800, 119))
+
+	# Se prepara el mensaje
 	texto = "No se puede eliminar la canción que se está reproduciendo"
 	mensaje = fuentePequena.render(texto, 1, (255,255,255))
+
+	# Se posiciona la imagen y se escribe el mensaje sobre ella
 	ventana.blit(borra, (0 , 290))
 	ventana.blit(mensaje, (25, 300))
+
+	# Se actualiza la pantalla y se detiene el programa por un momento
 	pygame.display.flip()
 	pygame.time.delay(1200)
 
-def mensajesSobreBotones() -> "void":	
+def mensajesSobreBotones() -> "void":
+	""" Se muestran sobre los botones cargar cancion y mostrar lista
+	un pequeño mensaje informativo
+	"""
+
+	# Se escribe el mensaje
 	mensaje = fuenteDiminuta.render("Cargar canciones:", 1, (220,220,220))
+	# Se dibuja
 	ventana.blit(mensaje, (685, 12))
+
+	# Se escriben las dos partes del mensaje
 	mensaje = fuenteDiminuta.render("Mostrar lista", 1, (220,220,220))
 	mensaje2 = fuenteDiminuta.render("de reproduccion:", 1, (220,220,220))
+
+	# Se dibujan en la interfaz
 	ventana.blit(mensaje, (571, 15))
 	ventana.blit(mensaje2, (571, 25))
 
+	# En este caso, la función que actualiza la pantalla está en el 
+	# procedimiento dibujarReproductor() 
+
 def mensajeDeErrorAlAbrirArchivo() -> "void":
+	""" Procedimiento que dibuja en la pantalla un mensaje de que
+	hubo un problema al tratar de abrir uno de los archivos que 
+	ingresó el usuario
+	"""
+
+	# Dibujar fondo
 	ventana.blit(fondo, (0,0))
 	texto = "No se pudo abrir ese archivo"
+
+	# Escribir mensaje y dibujarlo
 	mensaje = fuente.render(texto, 1, (255,255,255))
 	ventana.blit(mensaje, (150, 100))
+
+	# Actualizar la pantalla y detener el programa por un momento
 	pygame.display.flip()
 	pygame.time.delay(1000)
 
 def mensajeDeAlgunasCancionesNoSeCargaron() -> "void":
+	""" Procedimiento que muestra un mensaje de advertencia al usuario
+	de que algunas canciones no se pudieron cargar del archivo ingresado
+	Esto se debe a que el archivo no está en el formato para que se 
+	puedan leer las canciones o la ruta de alguna canción no existe
+	"""
+
+	# Se dibuja el fondo
 	ventana.blit(fondo, (0,0))
+
+	# Se dibujan los mensajes
 	texto = "No se pudieron cargar algunas canciones"
 	mensaje = fuente.render(texto, 1, (255,255,255))
 	ventana.blit(mensaje, (50, 50))
+
 	texto = "Revise que el archivo con la lista de canciones"
 	mensaje = fuentePequena.render(texto, 1, (255,255,255))
 	ventana.blit(mensaje, (10, 120))
+
 	texto = "tiene el formato válido"
 	mensaje = fuentePequena.render(texto, 1, (255,255,255))
 	ventana.blit(mensaje, (514, 120))
+
+	# Se actualiza la pantalla con los nuevos mensajes y se detiene el
+	# programa para que el usuario pueda leerlos
 	pygame.display.flip()
 	pygame.time.delay(4000)
 
 # Inicializar pygame
 pygame.init()
 
-# Fuentes
+# Cargar la fuente y definir las fuentes con distintos tamaños
 fuente = pygame.font.Font("fonts/BOOKOS.ttf", 40)
 fuentePequena = pygame.font.Font("fonts/BOOKOS.ttf", 25)
 fuenteDiminuta = pygame.font.Font("fonts/BOOKOS.ttf", 10)
 
-# Imagenes
+# Cargar todas las imágenes que usa la interfaz
 botonCargarCancion = pygame.image.load("images/LoadButton.png")
 botonSiguienteCancion = pygame.image.load("images/NextSongButton.png")
 botonCancionAnterior = pygame.image.load("images/PreviousSongButton.png")
@@ -702,16 +901,16 @@ panelDeCanciones = pygame.image.load("images/ShowSongsPanel.png")
 flechaDerecha = pygame.image.load("images/RightArrow.png")
 flechaIzquierda = pygame.image.load("images/LeftArrow.png")
 placa = pygame.image.load("images/Borra.png")
-
 fondo = pygame.image.load("images/Background.png")
 
+# Preparar la ventana en donde se mostrará la interfaz
 ventana = pygame.display.set_mode((800, 350))
 pygame.display.set_caption("Reproductor de música")
 
-# Dibujar fondo
+# Dibujar fondo de la interfaz por primera vez
 ventana.blit(fondo, (0,0))
 
-# Dibujar botones y guardar posición
+# Dibujar botones y guardar su posición
 pBotonPausa = ventana.blit(botonPausa, (25, 25))
 pBotonParar = ventana.blit(botonParar, (130, 25))
 pBotonReproducir = ventana.blit(botonReproducir, (235, 25))
@@ -727,66 +926,110 @@ texto = "Suena:"
 mensaje = fuente.render(texto, 1, (255, 255,255))
 ventana.blit(mensaje, (50, 170))
 
+# Actualizar la pantalla
 pygame.display.flip()
 
-# Se inicia con una lista de reproducción vacía
+# Se inicia el programa con lista vacía y sin reproductor
 lista = ArbolDeCanciones()
 reproductor = None
 
-
+# Bucle de la interfaz
 while True:
 
-	while reproductor is None or reproductor.estaTocandoCancion() or reproductor.parado or reproductor.pausado:
+	# Bucle usado para que cuando una canción se detenga porque ya 
+	# acabó su tiempo de reproducción, esta cambie automáticamente
+	while (reproductor is None or reproductor.estaTocandoCancion() 
+		or reproductor.parado or reproductor.pausado):
 
-		
-
+		# Dibujar los controles del reproducotr
 		dibujarReproductor(reproductor)
 
+		# Iterar por los eventos de pygame
 		for event in pygame.event.get():
+				# Si el usuario da a la equis en la ventana
+				# se sale el programa
 				if event.type == QUIT:
 					exit()
 
+				# Si el usuario da click
 				elif event.type == pygame.MOUSEBUTTONUP:
 
-					if (pBotonPausa.collidepoint(pygame.mouse.get_pos()) and reproductor is not None
+					# Si hace click sobre el botón de pausa y hay un
+					# reproductor activo y no está parada la canción,
+					# entonces se pausa
+					if (pBotonPausa.collidepoint(pygame.mouse.get_pos()) 
+						and reproductor is not None 
 						and not reproductor.parado):
+
 						pausarCancion(reproductor)
 						
-
-					elif (pBotonParar.collidepoint(pygame.mouse.get_pos()) and reproductor is not None
+					# Si hace click sobre el botón de parar y hay un
+					# reproductor activo y no está pausada la canción
+					# entonces se detiene
+					elif (pBotonParar.collidepoint(pygame.mouse.get_pos()) 
+						and reproductor is not None
 						and not reproductor.pausado):
+
 						pararCancion(reproductor)
 						
+					# Si hace click sobre el botón reproducir						
+					elif pBotonReproducir.collidepoint(
+						pygame.mouse.get_pos()):
 
-					elif pBotonReproducir.collidepoint(pygame.mouse.get_pos()):
+						# Si no hay un reproductor activo, se le avisa
+						# que debe cargar una lista de canciones
 						if reproductor is None:
 							mensajeDeDebeCargarCancion()
 
+						# En otro caso, se reproduce la canción
 						else:
 							reproducirCancion(reproductor)							
-							
-					elif pBotonCancionAnterior.collidepoint(pygame.mouse.get_pos()):
+					
+					# Si hace click sobre el botón de canción anterior
+					# el reproductor retrocede una canción en la lista
+					# de reproducción
+					elif pBotonCancionAnterior.collidepoint(
+						pygame.mouse.get_pos()):
+
 						cancionAnterior(lista, reproductor)
 
+					# Si hace click sobre el botón siguiente canción
+					# se avanza a la siguiente canción
+					elif pBotonSiguienteCancion.collidepoint(
+						pygame.mouse.get_pos()):
 
-					elif pBotonSiguienteCancion.collidepoint(pygame.mouse.get_pos()):
 						siguienteCancion(lista, reproductor)
 
-					elif pBotonCargarCancion.collidepoint(pygame.mouse.get_pos()):
-						lista, reproductor = cargarCanciones(lista, reproductor)
+					# Si hace click sobre el botón cargar cancion
+					# se entra al modo cargar canciones
+					elif pBotonCargarCancion.collidepoint(
+						pygame.mouse.get_pos()):
+						lista, reproductor = cargarCanciones(
+							lista, reproductor)
 
-					elif pBotonMostrar.collidepoint(pygame.mouse.get_pos()):
+					# Si hace click sobre el botón mostrar lista de 
+					# reproducción, se entra al modo de mostrar lista
+					# de reproducción
+					elif pBotonMostrar.collidepoint(
+						pygame.mouse.get_pos()):
 						mostrarLista(lista)
 
-
-
-					elif pBotonSalir.collidepoint(pygame.mouse.get_pos()):
+					# Si pulsa sobre el botón salir, se sale el programa
+					elif pBotonSalir.collidepoint(
+						pygame.mouse.get_pos()):
 						exit()
 
 
+	# Al salir del bucle es necesario saber si se debe reproducir
+	# otra canción o se debe detener
 
-	if siguienteCancion(lista, reproductor) is reproductor.actual:
+	# Si no hay una canción que es sucesora a la actual, entonces
+	# se detiene el reproductor
+	if cancionQueSigue(lista, reproductor) is None: 
 		reproductor.parar()
+
+	# Si hay una canción sucesora, se carga en el reproductor y se
+	# reproduce
 	else:
 		siguienteCancion(lista, reproductor)
 

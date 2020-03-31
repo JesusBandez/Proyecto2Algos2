@@ -1,4 +1,4 @@
 Xandria;Ceili;/home/jesus/Music/Ceili.mp3
-ja;je;/home/jesus/Music/velocidad_ida.mp3
-lol;3;/home/jesus/Music/romp.mp3
-GloryHammer;aajajjaa;home/jesus/Music/The Hollywood Hootsman.mp3
+Aaaaaaa;aaaaa;/home/jesus/Music/velocidad_ida.mp3
+Aaaaaa;aaaa;/home/jesus/Music/romp.mp3
+GloryHammer;aajajjaa;/home/jesus/Music/The Hollywood Hootsman.mp3
